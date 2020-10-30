@@ -51,6 +51,7 @@
 *.exe    binary
 *.txt    binary
 *.zip    binary
+*.json   binary
 # Jupyter notebook
 *.ipynb  text
 
