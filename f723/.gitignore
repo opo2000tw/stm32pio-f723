@@ -4,6 +4,7 @@
 .vscode/launch.json
 .vscode/ipch
 
+pio_*
 libdeps
 build
 GPATH

@@ -1,8 +1,12 @@
 # Custom settings, as referred to as "extra_script" in platformio.ini
 #
 # See http://docs.platformio.org/en/latest/projectconf.html#extra-script
+# See https://docs.platformio.org/en/latest/envvars.html
 
 from SCons.Script import DefaultEnvironment
+import time
+import os
+# from console.utils import wait_key
 
 env = DefaultEnvironment()
 
@@ -18,3 +22,7 @@ env.Append(
     CFLAGS=[
     ]
 )
+
+print("aaaaaaaaaa")
+os.system("python ./pre_build.py")
+time.sleep(2)
