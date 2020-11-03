@@ -35,7 +35,7 @@ extern I2C_HandleTypeDef hi2c2;
 extern I2C_HandleTypeDef hi2c3;
 
 /* USER CODE BEGIN Private defines */
-
+#define THERMAL_CAM hi2c2
 /* USER CODE END Private defines */
 
 void MX_I2C1_Init(void);

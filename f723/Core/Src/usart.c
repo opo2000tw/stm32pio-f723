@@ -399,15 +399,16 @@ int _write(int fd, char *ptr, int len)
      *
     * Only work for STDOUT, STDIN, and STDERR
      */
-    if (fd > 2)
-    {
-        return -1;
-    }
+    if (fd > 2) { return -1; }
     while (*ptr && (i < len))
     {
-        uart_msg_send(ptr);
-        i++;
-        ptr++;
+    HAL_UART_Transmit(&USARTx,ptr,sizeof(*ptr),10);
+    if (*ptr == '\n')
+    {
+        HAL_UART_Transmit(&USARTx,(uint8_t*)"\r",2,10);
+    }
+    i++;
+    ptr++;
     }
     return i;
 }

@@ -10,6 +10,8 @@ import os
 
 env = DefaultEnvironment()
 
+os.system("python ./pre_build.py")
+
 env.Append(
     LINKFLAGS=[
         "-mthumb",
@@ -22,7 +24,3 @@ env.Append(
     CFLAGS=[
     ]
 )
-
-print("aaaaaaaaaa")
-os.system("python ./pre_build.py")
-time.sleep(2)

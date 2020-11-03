@@ -5,8 +5,11 @@
 .vscode/ipch
 
 pio_*
-libdeps
+# libdeps
 build
 GPATH
 GRTAGS
 GTAGS
+Middlewares
+Drivers
+USB_HOST
