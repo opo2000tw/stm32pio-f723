@@ -27,7 +27,7 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#define THERMAL_CAM_ADDRESS &hi2c2
 /* USER CODE END Includes */
 
 extern I2C_HandleTypeDef hi2c1;
