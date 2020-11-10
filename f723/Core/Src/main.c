@@ -1,21 +1,4 @@
 /* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
-  * All rights reserved.</center></h2>
-  *
-  * This software component is licensed by ST under Ultimate Liberty license
-  * SLA0044, the "License"; You may not use this file except in compliance with
-  * the License. You may obtain a copy of the License at:
-  *                             www.st.com/SLA0044
-  *
-  ******************************************************************************
-  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -39,7 +22,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -48,7 +30,6 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -78,12 +59,10 @@ paramsMLX90640 mlx90640;
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 /**
@@ -93,7 +72,6 @@ void MX_FREERTOS_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -102,14 +80,12 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -182,164 +158,19 @@ int main(void)
     //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
     MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
     b++;
-    printf("b=%d\r\n",b);
+
+    // printf("b=%d,ta=%f,vdd=%f\r\n",b,Ta,vdd);
     // printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-    // for(int i = 0; i < 768; i++){
-    //   if(i%32 == 0 && i != 0){
-    //     printf("\r\n");
-    //   }
-    // printf("%2.2f ",mlx90640To[0]);
-    // }
-    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-  }
-  /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
-    if (status < 0)
+    if (b%60==0)
     {
-      //printf("GetFrame Error: %d\r\n",status);
-    }
-    float vdd = MLX90640_GetVdd(frame, &mlx90640);
-    float Ta = MLX90640_GetTa(frame, &mlx90640);
-
-    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
-    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
-
-    // printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-    // for(int i = 0; i < 768; i++){
-    //   if(i%32 == 0 && i != 0){
-    //     printf("\r\n");
-    //   }
-    printf("%2.2f ",mlx90640To[0]);
-    // }
-    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-  }
-  /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
-    if (status < 0)
-    {
-      //printf("GetFrame Error: %d\r\n",status);
-    }
-    float vdd = MLX90640_GetVdd(frame, &mlx90640);
-    float Ta = MLX90640_GetTa(frame, &mlx90640);
-
-    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
-    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
-
-    // printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-    // for(int i = 0; i < 768; i++){
-    //   if(i%32 == 0 && i != 0){
-    //     printf("\r\n");
-    //   }
-    printf("%2.2f ",mlx90640To[0]);
-    // }
-    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-  }
-  /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
-    if (status < 0)
-    {
-      //printf("GetFrame Error: %d\r\n",status);
-    }
-    float vdd = MLX90640_GetVdd(frame, &mlx90640);
-    float Ta = MLX90640_GetTa(frame, &mlx90640);
-
-    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
-    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
-
-    // printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-    // for(int i = 0; i < 768; i++){
-    //   if(i%32 == 0 && i != 0){
-    //     printf("\r\n");
-    //   }
-    printf("%2.2f\r\n ",mlx90640To[0]);
-    // }
-
-    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-  }
-  /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
-  MX_FREERTOS_Init();
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
-    if (status < 0)
-    {
-      //printf("GetFrame Error: %d\r\n",status);
-    }
-    float vdd = MLX90640_GetVdd(frame, &mlx90640);
-    float Ta = MLX90640_GetTa(frame, &mlx90640);
-
-    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
-    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
-
-    printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
     for(int i = 0; i < 768; i++){
       if(i%32 == 0 && i != 0){
         printf("\r\n");
       }
-      printf("%2.2f ",mlx90640To[i]);
+    printf("%2.2f ",mlx90640To[i]);
     }
-    printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+    }
+    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
   }
   /* USER CODE END 2 */
 
@@ -352,12 +183,9 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
   /* USER CODE END 3 */
 }
 
@@ -438,7 +266,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
 /* USER CODE END 4 */
 
 /**
@@ -452,13 +279,11 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM1) {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-
   /* USER CODE END Callback 1 */
 }
 
@@ -469,8 +294,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-
   /* USER CODE END Error_Handler_Debug */
 }
 
