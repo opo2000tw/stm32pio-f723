@@ -160,6 +160,38 @@ int main(void)
     printf("\r\nParameter extraction failed with error code:%d\r\n",status);
     while (1);
   }
+  int a = 0, b = 0;
+  while (1)
+  {
+    // HAL_Delay(20);
+    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+    if (status < 0)
+    {
+      printf("GetFrame Error: %d\r\n",status);
+    }
+    else
+    {
+      ;
+      // a++;
+      // printf("a=%d\r\n",a);
+    }
+    float vdd = MLX90640_GetVdd(frame, &mlx90640);
+    float Ta = MLX90640_GetTa(frame, &mlx90640);
+
+    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
+    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
+    b++;
+    printf("b=%d\r\n",b);
+    // printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+    // for(int i = 0; i < 768; i++){
+    //   if(i%32 == 0 && i != 0){
+    //     printf("\r\n");
+    //   }
+    // printf("%2.2f ",mlx90640To[0]);
+    // }
+    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+  }
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -176,7 +208,81 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-   int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+    if (status < 0)
+    {
+      //printf("GetFrame Error: %d\r\n",status);
+    }
+    float vdd = MLX90640_GetVdd(frame, &mlx90640);
+    float Ta = MLX90640_GetTa(frame, &mlx90640);
+
+    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
+    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
+
+    // printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+    // for(int i = 0; i < 768; i++){
+    //   if(i%32 == 0 && i != 0){
+    //     printf("\r\n");
+    //   }
+    printf("%2.2f ",mlx90640To[0]);
+    // }
+    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+  }
+  /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+    if (status < 0)
+    {
+      //printf("GetFrame Error: %d\r\n",status);
+    }
+    float vdd = MLX90640_GetVdd(frame, &mlx90640);
+    float Ta = MLX90640_GetTa(frame, &mlx90640);
+
+    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
+    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
+
+    // printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+    // for(int i = 0; i < 768; i++){
+    //   if(i%32 == 0 && i != 0){
+    //     printf("\r\n");
+    //   }
+    printf("%2.2f ",mlx90640To[0]);
+    // }
+    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+  }
+  /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
     if (status < 0)
     {
       //printf("GetFrame Error: %d\r\n",status);
@@ -197,6 +303,60 @@ int main(void)
     // }
 
     // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+  }
+  /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+    if (status < 0)
+    {
+      //printf("GetFrame Error: %d\r\n",status);
+    }
+    float vdd = MLX90640_GetVdd(frame, &mlx90640);
+    float Ta = MLX90640_GetTa(frame, &mlx90640);
+
+    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
+    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
+
+    printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+    for(int i = 0; i < 768; i++){
+      if(i%32 == 0 && i != 0){
+        printf("\r\n");
+      }
+      printf("%2.2f ",mlx90640To[i]);
+    }
+    printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
+  }
+  /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init();
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -327,6 +487,7 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+  printf("Wrong parameters value: file %s on line %d\r\n", file, line);
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

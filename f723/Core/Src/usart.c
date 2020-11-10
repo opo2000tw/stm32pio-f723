@@ -402,7 +402,7 @@ int _write(int fd, char *ptr, int len)
     if (fd > 2) { return -1; }
     while (*ptr && (i < len))
     {
-    HAL_UART_Transmit(&USARTx,ptr,sizeof(*ptr),10);
+    HAL_UART_Transmit(&USARTx,(uint8_t*)ptr,sizeof(*ptr),10);
     if (*ptr == '\n')
     {
         HAL_UART_Transmit(&USARTx,(uint8_t*)"\r",2,10);

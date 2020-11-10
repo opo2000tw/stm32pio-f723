@@ -59,7 +59,9 @@ def folder_size(path='.'):
     return total
 
 
-paths = [Path("Middlewares"), Path("USB_HOST"), Path("Drivers")]
+paths = [Path("Middlewares"),
+         Path("USB_HOST"),
+         Path("MLX90640-With-STM32")]
 
 
 def main():

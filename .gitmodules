@@ -1,9 +1,3 @@
-[submodule "lib_extra/mlx90640-library"]
-	path = lib_extra/mlx90640-library
-	url = git@github.com:melexis/mlx90640-library.git
 [submodule "pio-stm32cube-package-creator"]
 	path = pio-stm32cube-package-creator
 	url = git@github.com:maxgerhardt/pio-stm32cube-package-creator.git
-[submodule "lib_extra/MLX90640-With-STM32"]
-	path = lib_extra/MLX90640-With-STM32
-	url = git@github.com:imliubo/MLX90640-With-STM32.git
