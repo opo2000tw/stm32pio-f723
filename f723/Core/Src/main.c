@@ -62,7 +62,7 @@
 #define  FPS64HZ  0x07
 
 #define  MLX90640_ADDR 0x33
-#define	 RefreshRate FPS32HZ
+#define	 RefreshRate FPS64HZ
 #define  TA_SHIFT 8 //Default shift for MLX90640 in open air
 
 static uint16_t eeMLX90640[832];
