@@ -27,7 +27,7 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "stdio.h"
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef huart4;
@@ -37,7 +37,10 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN Private defines */
-
+#define EOL "\r\n"
+#define USARTx huart6
+#define uart_msg_send(string) HAL_UART_Transmit( &USARTx , (uint8_t *)#string"\r\n" , sizeof(#string"\r\n"), 0xFFFF);
+#define uart_msg_send_it(string) HAL_UART_Transmit_IT( &USARTx , (uint8_t *)#string"\r\n" , sizeof(#string"\r\n"), 0xFFFF);
 /* USER CODE END Private defines */
 
 void MX_UART4_Init(void);

@@ -1,0 +1,9 @@
+{
+    "python.pythonPath": "/usr/local/anaconda3/envs/platformio/bin/python",
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "editor.detectIndentation": false,
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "files.eol": "\n"
+}

@@ -1,0 +1,4 @@
+!Middlewares
+!Drivers
+!USB_HOST
+STM32F7xx_HAL_Driver

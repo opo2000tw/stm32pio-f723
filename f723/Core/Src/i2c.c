@@ -21,7 +21,6 @@
 #include "i2c.h"
 
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 I2C_HandleTypeDef hi2c1;
@@ -64,7 +63,7 @@ void MX_I2C2_Init(void)
 {
 
   hi2c2.Instance = I2C2;
-  hi2c2.Init.Timing = 0x6000030D;
+  hi2c2.Init.Timing = 0x00500B19;
   hi2c2.Init.OwnAddress1 = 0;
   hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -88,6 +87,9 @@ void MX_I2C2_Init(void)
   {
     Error_Handler();
   }
+  /** I2C Enable Fast Mode Plus
+  */
+  HAL_I2CEx_EnableFastModePlus(I2C_FASTMODEPLUS_I2C2);
 
 }
 /* I2C3 init function */

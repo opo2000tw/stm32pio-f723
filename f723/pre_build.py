@@ -3,27 +3,20 @@ import os
 import subprocess
 import shutil
 from pathlib import Path
+import glob
 
-# Write-Overwrites
-path = "./Core"
-w_path = "myfile.txt"
-r_path = w_path
-oldsize = 1
-
-
-def write(path, str):
-    file1 = open(w_path, "w")  # write mode
-    file1.write("Tomorrow \n")
-    file1.close()
+lib_path = Path("lib")
+inc_path = Path("inc")
+src_path = Path("src")
+py_path = Path("library.json")
 
 
 def rm_r(path='.'):
     size = folder_size(path)
-    # print(path+","+str(size))
     if size == 1 or size == 0:
-        print("not exsist "+path)
+        print("not exsist "+str(path))
     else:
-        print("remove "+path)
+        print("remove "+str(path))
         if os.path.isdir(path) and not os.path.islink(path):
             shutil.rmtree(path)
         elif os.path.exists(path):
@@ -31,19 +24,26 @@ def rm_r(path='.'):
 
 
 def cp_r(path_src, path_dest):
-    print(str(folder_size(path_src))+"," + str(folder_size(path_dest)))
+    new_path = Path.joinpath(lib_path, path_src)
     if folder_size(path_src) == 1:
         pass
+        print(str("file not exsist"))
+        return new_path, 1
     elif folder_size(path_src) == folder_size(path_dest):
         pass
+        print(str("file not changed"))
+        return new_path, 1
     else:
-        os.system("cp -rf"+" "+path_src+" "+path_dest)
-        print("cp -rf"+" "+path_src+" "+path_dest)
-        pass
+        # rm_r(new_path)
+        src = str(path_src)
+        dst = Path.joinpath(lib_path, path_src)
+        dst.mkdir(exist_ok=True, parents=True)
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+        return new_path, 0
 
 
 def dos2uinx_r(path):
-    os.system("find "+path+" -type f -print0 | xargs -0 dos2unix")
+    os.system("find "+path+" -type f -print0 | xargs -0 dos2unix > /dev/null 2>&1")
 
 
 def folder_size(path='.'):
@@ -59,20 +59,42 @@ def folder_size(path='.'):
     return total
 
 
+paths = [Path("Middlewares"),
+         Path("USB_HOST"),
+         Path("MLX90640-With-STM32")]
+
+
 def main():
-    # pass
-    # rm_r()
-    cp_r("Middlewares", "./pio_core/packages/framework-stm32cube/f7")
-    cp_r("Middlewares/ST/STM32_USB_Host_Library", "../lib_extra/")
-    cp_r("Middlewares/Third_Party/FreeRTOS", "../lib_extra/")
-    rm_r("Middlewares")
-    cp_r("USB_HOST", "../lib_extra/")
-    rm_r("USB_HOST")
-    cp_r("Drivers", "./pio_core/packages/framework-stm32cube/f7")
-    rm_r("Drivers")
-    dos2uinx_r("Core")
-    os.chdir("../lib_extra/")
-    os.system("python ./recursive_copy.py")
+    pass
+    for path in paths:
+        new_root_path, break_flag = cp_r(path, lib_path)
+        if break_flag == 1:
+            break
+        new_inc_path = Path.joinpath(new_root_path, inc_path)
+        for file in glob.glob(os.path.join(new_root_path, '**', '*.h*'), recursive=True):
+            file_path = Path(file)
+            new_file_path = Path.joinpath(new_inc_path, file_path.name)
+            if(file.find('@') >= 0):
+                pass
+            elif(file_path == new_file_path):
+                pass
+            else:
+                Path(new_inc_path).mkdir(parents=True, exist_ok=True)
+                shutil.copy2(str(file_path), str(new_file_path))
+        new_src_path = Path.joinpath(new_root_path, src_path)
+        for file in glob.glob(os.path.join(new_root_path, '**', '*.c*'), recursive=True):
+            file_path = Path(file)
+            new_file_path = Path.joinpath(new_src_path, file_path.name)
+            if(file.find('@') >= 0):
+                pass
+            elif(file_path == new_file_path):
+                pass
+            else:
+                Path(new_src_path).mkdir(parents=True, exist_ok=True)
+                shutil.copy2(str(file_path), str(new_file_path))
+
+        # os.system("python"+lib_path+i+"recursive.py")
+        # rm_r(i)
 
 
 if __name__ == '__main__':
