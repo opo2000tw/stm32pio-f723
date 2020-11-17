@@ -26,12 +26,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stddef.h>
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
-#include <stdio.h>
 #include "lwprintf.h"
-#include <string.h>
-#include <stdint.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,27 +56,26 @@ float emissivity = 0.95;
 int status;
 
 paramsMLX90640 mlx90640;
+
+static int b = 0;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes =
-{
+const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
-  .stack_size = 128 * 20
+  .stack_size = 128 * 4
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
-const osThreadAttr_t myTask02_attributes =
-{
+const osThreadAttr_t myTask02_attributes = {
   .name = "myTask02",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTimer01 */
 osTimerId_t myTimer01Handle;
-const osTimerAttr_t myTimer01_attributes =
-{
+const osTimerAttr_t myTimer01_attributes = {
   .name = "myTimer01"
 };
 
@@ -153,10 +150,33 @@ void vApplicationDaemonTaskStartupHook(void)
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void)
-{
+void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-
+  status = MLX90640_SetRefreshRate(MLX90640_ADDR, RefreshRate);
+  if (status != 0)
+  {
+    printf("\r\nSetRefreshRate error with code:%d\r\n", status);
+    while (1);
+  }
+  status = MLX90640_SetChessMode(MLX90640_ADDR);
+  if (status != 0)
+  {
+    printf("\r\nSetChessMode error with code:%d\r\n", status);
+    while (1);
+  }
+  status = MLX90640_DumpEE(MLX90640_ADDR, eeMLX90640);
+  if (status != 0)
+  {
+    printf("\r\nload system parameters error with code:%d\r\n", status);
+    while (1);
+  }
+  status = MLX90640_ExtractParameters(eeMLX90640, &mlx90640);
+  if (status != 0)
+  {
+    printf("\r\nParameter extraction failed with error code:%d\r\n", status);
+    while (1);
+  }
+  printf("initialed\r\n");
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -173,7 +193,7 @@ void MX_FREERTOS_Init(void)
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
-  osTimerStart(myTimer01Handle, 10);
+  osTimerStart(myTimer01Handle, 1);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -204,60 +224,11 @@ void StartDefaultTask(void *argument)
 {
   /* init code for USB_HOST */
   MX_USB_HOST_Init();
-  status = MLX90640_SetRefreshRate(MLX90640_ADDR, RefreshRate);
-  if (status != 0)
-  {
-    printf("\r\nSetRefreshRate error with code:%d\r\n", status);
-    while (1);
-  }
-  status = MLX90640_SetChessMode(MLX90640_ADDR);
-  if (status != 0)
-  {
-    printf("\r\nSetChessMode error with code:%d\r\n", status);
-    while (1);
-  }
-  status = MLX90640_DumpEE(MLX90640_ADDR, eeMLX90640);
-  if (status != 0)
-  {
-    printf("\r\nload system parameters error with code:%d\r\n", status);
-    while (1);
-  }
-  status = MLX90640_ExtractParameters(eeMLX90640, &mlx90640);
-  if (status != 0)
-  {
-    printf("\r\nParameter extraction failed with error code:%d\r\n", status);
-    while (1);
-  }
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for (;;)
   {
-    osDelay(10);
-    static int a = 0, b = 0;
-    // HAL_Delay(20);
-    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
-    if (status < 0)
-    {
-      printf("GetFrame Error: %d\r\n", status);
-    }
-    float vdd = MLX90640_GetVdd(frame, &mlx90640);
-    float Ta = MLX90640_GetTa(frame, &mlx90640);
-    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-    printf("vdd:  %f Tr: %f\r\n", vdd, tr);
-    MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To);
-
-    b++;
-    if (b % 60 == 0)
-    {
-      for (int i = 0; i < 768; i++)
-      {
-        if (i % 32 == 0 && i != 0)
-        {
-          printf("\r\n");
-        }
-        printf("%2.2f ", mlx90640To[i]);
-      }
-    }
+    osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -275,7 +246,7 @@ void StartTask02(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    osDelay(1);
+    osDelay(1000);;
   }
   /* USER CODE END StartTask02 */
 }
@@ -284,7 +255,31 @@ void StartTask02(void *argument)
 void Callback01(void *argument)
 {
   /* USER CODE BEGIN Callback01 */
-
+  int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+  if (status < 0)
+  {
+    printf("GetFrame Error: %d\r\n", status);
+  }
+  float tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+  MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To);
+#if 0
+  float vdd = MLX90640_GetVdd(frame, &mlx90640);
+  printf("vdd:  %f Tr: %f\r\n", vdd, tr);
+#else
+  b++;
+  if(b%64==0)
+    printf("%d\r\n", b);
+#endif
+#if 1
+  for (int i = 0; i < 768; i++)
+  {
+    if (i % 32 == 0 && i != 0)
+    {
+      printf("\r\n");
+    }
+    printf("%2.2f ", mlx90640To[i]);
+  }
+#endif
   /* USER CODE END Callback01 */
 }
 

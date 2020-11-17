@@ -43,7 +43,7 @@
  * copy & replace here settings you want to change values
  */
 #define LWPRINTF_CFG_OS                     0
-
+#define LWPRINTF_CFG_ENABLE_STD_NAMES       1
 #define LWPRINTF_CFG_SUPPORT_LONG_LONG      0
 
 #endif /* OW_HDR_OPTS_H */
