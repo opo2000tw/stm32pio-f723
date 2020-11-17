@@ -16,8 +16,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "MLX90640_API.h"
-#include "MLX90640_I2C_Driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,24 +33,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-#define  FPS2HZ   0x02
-#define  FPS4HZ   0x03
-#define  FPS8HZ   0x04
-#define  FPS16HZ  0x05
-#define  FPS32HZ  0x06
-#define  FPS64HZ  0x07
-
-#define  MLX90640_ADDR 0x33
-#define	 RefreshRate FPS64HZ
-#define  TA_SHIFT 8 //Default shift for MLX90640 in open air
-
-static uint16_t eeMLX90640[832];
-static float mlx90640To[768];
-uint16_t frame[834];
-float emissivity=0.95;
-int status;
-
-paramsMLX90640 mlx90640;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -112,66 +92,6 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
-  status = MLX90640_SetRefreshRate(MLX90640_ADDR, RefreshRate);
-  if (status != 0)
-  {
-    printf("\r\nSetRefreshRate error with code:%d\r\n",status);
-    while (1);
-  }
-	status = MLX90640_SetChessMode(MLX90640_ADDR);
-  if (status != 0)
-  {
-    printf("\r\nSetChessMode error with code:%d\r\n",status);
-    while (1);
-  }
-  status = MLX90640_DumpEE(MLX90640_ADDR, eeMLX90640);
-  if (status != 0)
-  {
-    printf("\r\nload system parameters error with code:%d\r\n",status);
-    while (1);
-  }
-  status = MLX90640_ExtractParameters(eeMLX90640, &mlx90640);
-  if (status != 0)
-  {
-    printf("\r\nParameter extraction failed with error code:%d\r\n",status);
-    while (1);
-  }
-  int a = 0, b = 0;
-  while (1)
-  {
-    // HAL_Delay(20);
-    int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
-    if (status < 0)
-    {
-      printf("GetFrame Error: %d\r\n",status);
-    }
-    else
-    {
-      ;
-      // a++;
-      // printf("a=%d\r\n",a);
-    }
-    float vdd = MLX90640_GetVdd(frame, &mlx90640);
-    float Ta = MLX90640_GetTa(frame, &mlx90640);
-
-    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
-    MLX90640_CalculateTo(frame, &mlx90640, emissivity , tr, mlx90640To);
-    b++;
-
-    // printf("b=%d,ta=%f,vdd=%f\r\n",b,Ta,vdd);
-    // printf("\r\n==========================IAMLIUBO MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-    if (b%60==0)
-    {
-    for(int i = 0; i < 768; i++){
-      if(i%32 == 0 && i != 0){
-        printf("\r\n");
-      }
-    printf("%2.2f ",mlx90640To[i]);
-    }
-    }
-    // printf("\r\n==========================IAMLIUB0 MLX90640 WITH STM32 SWI2C EXAMPLE Github:github.com/imliubo==========================\r\n");
-  }
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -183,9 +103,9 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-    /* USER CODE END WHILE */
+  /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
+  /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
 }
 
@@ -229,8 +149,8 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -240,11 +160,11 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART6
-                              |RCC_PERIPHCLK_UART4|RCC_PERIPHCLK_UART5
-                              |RCC_PERIPHCLK_UART7|RCC_PERIPHCLK_SAI2
-                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
-                              |RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_CLK48;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USART6
+      | RCC_PERIPHCLK_UART4 | RCC_PERIPHCLK_UART5
+      | RCC_PERIPHCLK_UART7 | RCC_PERIPHCLK_SAI2
+      | RCC_PERIPHCLK_I2C1 | RCC_PERIPHCLK_I2C2
+      | RCC_PERIPHCLK_I2C3 | RCC_PERIPHCLK_CLK48;
   PeriphClkInitStruct.PLLSAI.PLLSAIN = 192;
   PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
   PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV2;
@@ -280,7 +200,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM1) {
+  if (htim->Instance == TIM1)
+  {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
