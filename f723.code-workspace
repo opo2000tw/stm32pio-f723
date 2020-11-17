@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "lib_extra"
+		},
+		{
+			"path": "pio-stm32cube-package-creator"
 		}
 	],
 	"settings": {},
