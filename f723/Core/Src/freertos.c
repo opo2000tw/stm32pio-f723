@@ -260,18 +260,18 @@ void Callback01(void *argument)
   {
     printf("GetFrame Error: %d\r\n", status);
   }
-  float tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-  MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To);
-#if 0
-  float vdd = MLX90640_GetVdd(frame, &mlx90640);
-  printf("vdd:  %f Tr: %f\r\n", vdd, tr);
-#else
+  MLX90640_CalculateTo(frame, &mlx90640, emissivity, mlx90640To);
   b++;
-  if(b%64==0)
-    printf("%d\r\n", b);
-#endif
-#if 1
-  for (int i = 0; i < 768; i++)
+// #if 0
+//   float tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+//   float vdd = MLX90640_GetVdd(frame, &mlx90640);
+//   printf("v:%ft:%f\r\n", vdd, tr);
+// #else
+//   if(b%64==0)
+//     printf("b=%d\r\n", b);
+// #endif
+#if 0
+  for (int i = 0; i < NELEMS(mlx90640To); i++)
   {
     if (i % 32 == 0 && i != 0)
     {

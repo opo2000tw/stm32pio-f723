@@ -258,7 +258,7 @@ int MLX90640_GetCurMode(uint8_t slaveAddr)
 
 //------------------------------------------------------------------------------
 
-void MLX90640_CalculateTo(uint16_t *frameData, const paramsMLX90640 *params, float emissivity, float tr, float *result)
+void MLX90640_CalculateTo(uint16_t *frameData, const paramsMLX90640 *params, float emissivity, float *result)
 {
     float vdd;
     float ta;
@@ -287,7 +287,8 @@ void MLX90640_CalculateTo(uint16_t *frameData, const paramsMLX90640 *params, flo
     
     subPage = frameData[833];
     vdd = MLX90640_GetVdd(frameData, params);
-    ta = MLX90640_GetTa(frameData, params);
+    float tr = vdd - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    ta = MLX90640_GetTa(frameData, params, vdd);
     
     ta4 = (ta + 273.15f);
     ta4 = ta4 * ta4;
@@ -430,7 +431,7 @@ void MLX90640_GetImage(uint16_t *frameData, const paramsMLX90640 *params, float 
     
     subPage = frameData[833];
     vdd = MLX90640_GetVdd(frameData, params);
-    ta = MLX90640_GetTa(frameData, params);
+    ta = MLX90640_GetTa(frameData, params, vdd);
     
     ktaScale = pow(2,(double)params->ktaScale);
     kvScale = pow(2,(double)params->kvScale);
@@ -534,14 +535,11 @@ float MLX90640_GetVdd(uint16_t *frameData, const paramsMLX90640 *params)
 
 //------------------------------------------------------------------------------
 
-float MLX90640_GetTa(uint16_t *frameData, const paramsMLX90640 *params)
+float MLX90640_GetTa(uint16_t *frameData, const paramsMLX90640 *params, float vdd)
 {
     float ptat;
     float ptatArt;
-    float vdd;
     float ta;
-    
-    vdd = MLX90640_GetVdd(frameData, params);
     
     ptat = frameData[800];
     if(ptat > 32767)
