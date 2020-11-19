@@ -165,19 +165,19 @@ void vApplicationDaemonTaskStartupHook(void)
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-  status = MLX90640_SetRefreshRate(MLX90640_ADDR, RefreshRate);
+  status = MLX90640_SetRefreshRate(MLX_ADDR, MLX_RATE);
   if (status != 0)
   {
     printf("\r\nSetRefreshRate error with code:%d\r\n", status);
     while (1);
   }
-  status = MLX90640_SetChessMode(MLX90640_ADDR);
+  status = MLX90640_SetChessMode(MLX_ADDR);
   if (status != 0)
   {
     printf("\r\nSetChessMode error with code:%d\r\n", status);
     while (1);
   }
-  status = MLX90640_DumpEE(MLX90640_ADDR, eeMLX90640);
+  status = MLX90640_DumpEE(MLX_ADDR, eeMLX90640);
   if (status != 0)
   {
     printf("\r\nload system parameters error with code:%d\r\n", status);
@@ -189,6 +189,7 @@ void MX_FREERTOS_Init(void) {
     printf("\r\nParameter extraction failed with error code:%d\r\n", status);
     while (1);
   }
+  printf("===%d,%d===\r\n", MLX90640_GetRefreshRate(MLX_ADDR), MLX90640_GetCurMode(MLX_ADDR));
   printf("initialed\r\n");
   /* USER CODE END Init */
 
@@ -276,12 +277,15 @@ void StartTask02(void *argument)
 void Callback01(void *argument)
 {
   /* USER CODE BEGIN Callback01 */
-  int status = MLX90640_GetFrameData(MLX90640_ADDR, frame);
+  int status = MLX90640_GetFrameData(MLX_ADDR, frame);
   if (status < 0)
   {
     printf("GetFrame Error: %d\r\n", status);
   }
-  MLX90640_CalculateTo(frame, &mlx90640, emissivity, mlx90640To);
+  paramsMLX90640 *params = &mlx90640;
+  MLX90640_CalculateTo(frame, params, emissivity, mlx90640To);
+  MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
+  MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
   b++;
 // #if 0
 //   float tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
@@ -300,6 +304,9 @@ void Callback01(void *argument)
     }
     printf("%2.2f ", mlx90640To[i]);
   }
+#endif
+#if 0
+  printf("sub:%d\r\n", MLX90640_GetSubPageNumber(frame));
 #endif
   /* USER CODE END Callback01 */
 }

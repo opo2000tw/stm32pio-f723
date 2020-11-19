@@ -35,6 +35,7 @@ int ExtractDeviatingPixels(uint16_t *eeData, paramsMLX90640 *mlx90640);
 int CheckAdjacentPixels(uint16_t pix1, uint16_t pix2);
 float GetMedian(float *values, int n);
 int IsPixelBad(uint16_t pixel, paramsMLX90640 *params);
+int CheckEEPROMValid(uint16_t *eeData);
 
 int MLX90640_DumpEE(uint8_t slaveAddr, uint16_t *eeData)
 {
@@ -102,27 +103,27 @@ int MLX90640_GetFrameData(uint8_t slaveAddr, uint16_t *frameData)
 
 int MLX90640_ExtractParameters(uint16_t *eeData, paramsMLX90640 *mlx90640)
 {
-  int error = 0;
+  int error = CheckEEPROMValid(eeData);
 
-  ExtractVDDParameters(eeData, mlx90640);
-  ExtractPTATParameters(eeData, mlx90640);
-  ExtractGainParameters(eeData, mlx90640);
-  ExtractTgcParameters(eeData, mlx90640);
-  ExtractResolutionParameters(eeData, mlx90640);
-  ExtractKsTaParameters(eeData, mlx90640);
-  ExtractKsToParameters(eeData, mlx90640);
-  ExtractCPParameters(eeData, mlx90640);
-  ExtractAlphaParameters(eeData, mlx90640);
-  ExtractOffsetParameters(eeData, mlx90640);
-  ExtractKtaPixelParameters(eeData, mlx90640);
-  ExtractKvPixelParameters(eeData, mlx90640);
-  ExtractCILCParameters(eeData, mlx90640);
-  error = ExtractDeviatingPixels(eeData, mlx90640);
-
+  if (error == 0)
+  {
+    ExtractVDDParameters(eeData, mlx90640);
+    ExtractPTATParameters(eeData, mlx90640);
+    ExtractGainParameters(eeData, mlx90640);
+    ExtractTgcParameters(eeData, mlx90640);
+    ExtractResolutionParameters(eeData, mlx90640);
+    ExtractKsTaParameters(eeData, mlx90640);
+    ExtractKsToParameters(eeData, mlx90640);
+    ExtractAlphaParameters(eeData, mlx90640);
+    ExtractOffsetParameters(eeData, mlx90640);
+    ExtractKtaPixelParameters(eeData, mlx90640);
+    ExtractKvPixelParameters(eeData, mlx90640);
+    ExtractCPParameters(eeData, mlx90640);
+    ExtractCILCParameters(eeData, mlx90640);
+    error = ExtractDeviatingPixels(eeData, mlx90640);
+  }
   return error;
-
 }
-
 //------------------------------------------------------------------------------
 
 int MLX90640_SetResolution(uint8_t slaveAddr, uint8_t resolution)
@@ -1393,6 +1394,20 @@ int CheckAdjacentPixels(uint16_t pix1, uint16_t pix2)
   }
 
   return 0;
+}
+
+//------------------------------------------------------------------------------
+
+int CheckEEPROMValid(uint16_t *eeData)
+{
+  int deviceSelect;
+  deviceSelect = eeData[10] & 0x0040;
+  if (deviceSelect == 0)
+  {
+    return 0;
+  }
+
+  return -7;
 }
 
 //------------------------------------------------------------------------------
