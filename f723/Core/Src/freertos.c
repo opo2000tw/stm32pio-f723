@@ -44,7 +44,7 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -54,6 +54,8 @@ static float mlx90640To[768];
 uint16_t frame[834];
 float emissivity = 0.95;
 int status;
+
+static uint32_t ulIdleCycleCount;
 
 paramsMLX90640 mlx90640;
 
@@ -78,6 +80,11 @@ osTimerId_t myTimer01Handle;
 const osTimerAttr_t myTimer01_attributes = {
   .name = "myTimer01"
 };
+/* Definitions for myTimer02 */
+osTimerId_t myTimer02Handle;
+const osTimerAttr_t myTimer02_attributes = {
+  .name = "myTimer02"
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -87,6 +94,7 @@ const osTimerAttr_t myTimer01_attributes = {
 void StartDefaultTask(void *argument);
 void StartTask02(void *argument);
 void Callback01(void *argument);
+void Callback02(void *argument);
 
 extern void MX_USB_HOST_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -109,6 +117,7 @@ __weak void vApplicationIdleHook( void )
   important that vApplicationIdleHook() is permitted to return to its calling
   function, because it is the responsibility of the idle task to clean up
   memory allocated by the kernel to any task that has since been deleted. */
+  __NOP();
 }
 /* USER CODE END 2 */
 
@@ -120,6 +129,7 @@ __weak void vApplicationTickHook( void )
   added here, but the tick hook is called from an interrupt context, so
   code must not attempt to block, and only the interrupt safe FreeRTOS API
   functions can be used (those that end in FromISR()). */
+  ulIdleCycleCount++;
 }
 /* USER CODE END 3 */
 
@@ -136,12 +146,15 @@ __weak void vApplicationMallocFailedHook(void)
   FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
   to query the size of free heap space that remains (although it does not
   provide information on how the remaining heap might be fragmented). */
+  while (1)
+    printf("[x] vApplicationMallocFailedHook\r\n");
 }
 /* USER CODE END 5 */
 
 /* USER CODE BEGIN DAEMON_TASK_STARTUP_HOOK */
 void vApplicationDaemonTaskStartupHook(void)
 {
+  printf("[x] vApplicationDaemonTaskStartupHook\r\n");
 }
 /* USER CODE END DAEMON_TASK_STARTUP_HOOK */
 
@@ -190,6 +203,9 @@ void MX_FREERTOS_Init(void) {
   /* Create the timer(s) */
   /* creation of myTimer01 */
   myTimer01Handle = osTimerNew(Callback01, osTimerPeriodic, NULL, &myTimer01_attributes);
+
+  /* creation of myTimer02 */
+  myTimer02Handle = osTimerNew(Callback02, osTimerPeriodic, NULL, &myTimer02_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
@@ -246,7 +262,12 @@ void StartTask02(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    osDelay(1000);;
+    osDelay(1000);
+#if 1
+    printf("[%d]\r\n",b);
+    b = 0;
+    printf("IdleCount: %u\r\n", ulIdleCycleCount);
+#endif
   }
   /* USER CODE END StartTask02 */
 }
@@ -281,6 +302,14 @@ void Callback01(void *argument)
   }
 #endif
   /* USER CODE END Callback01 */
+}
+
+/* Callback02 function */
+void Callback02(void *argument)
+{
+  /* USER CODE BEGIN Callback02 */
+
+  /* USER CODE END Callback02 */
 }
 
 /* Private application code --------------------------------------------------*/
