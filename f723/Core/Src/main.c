@@ -226,7 +226,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
     while(1)
   {
-    BSP_LED_Toggle(LED6);
+    BSP_LED_Toggle(LED_RED);
     HAL_Delay(1000);
   }
   /* USER CODE END Error_Handler_Debug */

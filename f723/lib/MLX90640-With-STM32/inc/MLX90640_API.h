@@ -23,15 +23,16 @@ extern "C" {
 
 #define SCALEALPHA 0.000001f
 
-#define  MLX_FPS_2HZ   0x02
-#define  MLX_FPS_4HZ   0x03
-#define  MLX_FPS_8HZ   0x04
-#define  MLX_FPS_16HZ  0x05
-#define  MLX_FPS_32HZ  0x06
-#define  MLX_FPS_64HZ  0x07
-#define  MLX_ADDR 0x33
-#define  MLX_RATE MLX_FPS_64HZ
-#define  TA_SHIFT 8 //Default shift for MLX90640 in open air
+#define MLX_FPS_2HZ   0x02
+#define MLX_FPS_4HZ   0x03
+#define MLX_FPS_8HZ   0x04
+#define MLX_FPS_16HZ  0x05
+#define MLX_FPS_32HZ  0x06
+#define MLX_FPS_64HZ  0x07
+#define MLX_FPS_CAL(x) (1000 / (1 << (x - 1)))
+#define MLX_ADDR 0x33
+#define MLX_RATE MLX_FPS_64HZ
+#define TA_SHIFT 8 //Default shift for MLX90640 in open air
 
 typedef struct
 {

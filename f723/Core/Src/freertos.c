@@ -62,6 +62,8 @@ uint16_t CPUUsage;
 paramsMLX90640 mlx90640;
 
 static int b = 0;
+static int c = 0;
+static int temp = MLX_FPS_CAL(MLX_RATE);
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -211,7 +213,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
-  osTimerStart(myTimer01Handle, 40);
+  osTimerStart(myTimer01Handle, MLX_FPS_CAL(MLX_RATE));
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -247,6 +249,9 @@ void StartDefaultTask(void *argument)
   for (;;)
   {
     osDelay(1000);
+    printf("[[%d]]\r\n",c);
+    c = 0;
+    BSP_LED_Toggle(LED_GREEN);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -264,13 +269,12 @@ void StartTask02(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    osDelay(1000);
+    osDelay(MLX_FPS_CAL(MLX_RATE));
 #if 1
     printf("[%d]\r\n",b);
-    BSP_LED_Toggle(LED5);
     b = 0;
-    printf("IdleCount: %u\r\n", ulIdleCycleCount);
-    printf("CPUUsage: %d\r\n", CPUUsage);
+    // printf("IdleCount: %u\r\n", ulIdleCycleCount);
+    // printf("CPUUsage: %d\r\n", osGetCPUUsage());
 #endif
   }
   /* USER CODE END StartTask02 */
@@ -289,11 +293,10 @@ void Callback01(void *argument)
   {
     paramsMLX90640 *params = &mlx90640;
     MLX90640_CalculateTo(frame, params, emissivity, mlx90640To);
-    MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
-    MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
     b++;
+    c++;
   }
-  CPUUsage = osGetCPUUsage();
+// printf("CPUUsage: %d\r\n", osGetCPUUsage());
 // #if 0
 //   float tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
 //   float vdd = MLX90640_GetVdd(frame, &mlx90640);
