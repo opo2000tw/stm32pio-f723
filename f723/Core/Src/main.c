@@ -17,6 +17,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "lwprintf.h"
+#include "stm32f723e_discovery.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -223,6 +224,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+    while(1)
+  {
+    BSP_LED_Toggle(LED6);
+    HAL_Delay(1000);
+  }
   /* USER CODE END Error_Handler_Debug */
 }
 

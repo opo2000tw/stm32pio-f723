@@ -26,6 +26,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stm32f723e_discovery.h"
 #include <stddef.h>
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
@@ -266,6 +267,7 @@ void StartTask02(void *argument)
     osDelay(1000);
 #if 1
     printf("[%d]\r\n",b);
+    BSP_LED_Toggle(LED5);
     b = 0;
     printf("IdleCount: %u\r\n", ulIdleCycleCount);
 #endif
