@@ -31,6 +31,7 @@
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
 #include "lwprintf.h"
+#include "cpu_utils.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,7 +57,7 @@ uint16_t frame[834];
 float emissivity = 0.95;
 int status;
 
-static uint32_t ulIdleCycleCount;
+uint16_t CPUUsage;
 
 paramsMLX90640 mlx90640;
 
@@ -130,7 +131,6 @@ __weak void vApplicationTickHook( void )
   added here, but the tick hook is called from an interrupt context, so
   code must not attempt to block, and only the interrupt safe FreeRTOS API
   functions can be used (those that end in FromISR()). */
-  ulIdleCycleCount++;
 }
 /* USER CODE END 3 */
 
@@ -211,7 +211,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
-  osTimerStart(myTimer01Handle, 1);
+  osTimerStart(myTimer01Handle, 40);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -270,6 +270,7 @@ void StartTask02(void *argument)
     BSP_LED_Toggle(LED5);
     b = 0;
     printf("IdleCount: %u\r\n", ulIdleCycleCount);
+    printf("CPUUsage: %d\r\n", CPUUsage);
 #endif
   }
   /* USER CODE END StartTask02 */
@@ -284,11 +285,15 @@ void Callback01(void *argument)
   {
     printf("GetFrame Error: %d\r\n", status);
   }
-  paramsMLX90640 *params = &mlx90640;
-  MLX90640_CalculateTo(frame, params, emissivity, mlx90640To);
-  MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
-  MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
-  b++;
+  else
+  {
+    paramsMLX90640 *params = &mlx90640;
+    MLX90640_CalculateTo(frame, params, emissivity, mlx90640To);
+    MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
+    MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
+    b++;
+  }
+  CPUUsage = osGetCPUUsage();
 // #if 0
 //   float tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
 //   float vdd = MLX90640_GetVdd(frame, &mlx90640);

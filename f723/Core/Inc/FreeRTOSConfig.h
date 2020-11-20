@@ -45,6 +45,10 @@
 
 /* USER CODE BEGIN Includes */
 /* Section where include file can be added */
+#define traceTASK_SWITCHED_IN()  extern void StartIdleMonitor(void); \
+                                         StartIdleMonitor()
+#define traceTASK_SWITCHED_OUT() extern void EndIdleMonitor(void); \
+                                         EndIdleMonitor()
 /* USER CODE END Includes */
 
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
