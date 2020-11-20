@@ -21,7 +21,6 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart4;
@@ -117,7 +116,7 @@ void MX_USART6_UART_Init(void)
 {
 
   huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
+  huart6.Init.BaudRate = 921600;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
   huart6.Init.StopBits = UART_STOPBITS_1;
   huart6.Init.Parity = UART_PARITY_NONE;
@@ -390,6 +389,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 //   return ch;
 // }
 
+#if 0
 int _write(int fd, char *ptr, int len)
 {
     int i = 0;
@@ -411,6 +411,25 @@ int _write(int fd, char *ptr, int len)
     ptr++;
     }
     return i;
+}
+#endif
+
+/**
+ * \brief           Output function to handle all characters for print operation
+ * \param[in]       ch: Character to output
+ * \param[in]       p: \ref lwprintf_t handle
+ * \return          ch on success, 0 on failure
+ */
+int lwprintf_my_out_func(int ch, lwprintf_t* p)
+{
+    uint8_t c = (uint8_t)ch;
+
+    /* Don't print zero */
+    if (c == '\0') {
+        return ch;
+    }
+    HAL_UART_Transmit(&USARTx, &c, 1, 10);
+    return ch;
 }
 /* USER CODE END 1 */
 

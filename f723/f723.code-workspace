@@ -1,12 +1,18 @@
 {
 	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../lib_extra"
-		}
-	],
+    {
+      "path": "."
+    },
+    {
+      "path": "../lib_extra"
+    },
+    {
+      "path": "pio_core/packages/framework-stm32cube/f7"
+    },
+    {
+      "path": "../../../../Users/blakewu/Downloads/MLX90640"
+    }
+  ],
 	"settings": {
 		"python.pythonPath": "/usr/local/anaconda3/envs/platformio/bin/python"
 	},

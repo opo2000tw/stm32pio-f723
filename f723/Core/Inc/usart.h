@@ -27,7 +27,7 @@
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
+#include "lwprintf.h"
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef huart4;
@@ -50,7 +50,7 @@ void MX_USART2_UART_Init(void);
 void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-
+int lwprintf_my_out_func(int ch, lwprintf_t* p);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus
