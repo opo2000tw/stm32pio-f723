@@ -30,7 +30,15 @@ SRAM_HandleTypeDef hsram2;
 /* FMC initialization function */
 void MX_FMC_Init(void)
 {
+  /* USER CODE BEGIN FMC_Init 0 */
+
+  /* USER CODE END FMC_Init 0 */
+
   FMC_NORSRAM_TimingTypeDef Timing = {0};
+
+  /* USER CODE BEGIN FMC_Init 1 */
+
+  /* USER CODE END FMC_Init 1 */
 
   /** Perform the SRAM1 memory initialization sequence
   */
@@ -102,6 +110,9 @@ void MX_FMC_Init(void)
     Error_Handler( );
   }
 
+  /* USER CODE BEGIN FMC_Init 2 */
+
+  /* USER CODE END FMC_Init 2 */
 }
 
 static uint32_t FMC_Initialized = 0;

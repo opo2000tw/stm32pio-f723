@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : QUADSPI.c
-  * Description        : This file provides code for the configuration
-  *                      of the QUADSPI instances.
+  * @file    quadspi.c
+  * @brief   This file provides code for the configuration
+  *          of the QUADSPI instances.
   ******************************************************************************
   * @attention
   *

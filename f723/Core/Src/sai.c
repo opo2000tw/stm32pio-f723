@@ -32,6 +32,18 @@ SAI_HandleTypeDef hsai_BlockB2;
 void MX_SAI2_Init(void)
 {
 
+  /* USER CODE BEGIN SAI2_Init 0 */
+
+  /* USER CODE END SAI2_Init 0 */
+
+  /* USER CODE BEGIN SAI2_Init 1 */
+
+  /* USER CODE END SAI2_Init 1 */
+
+  /* USER CODE BEGIN SAI2_Init 1 */
+
+  /* USER CODE END SAI2_Init 1 */
+
   hsai_BlockA2.Instance = SAI2_Block_A;
   hsai_BlockA2.Init.Protocol = SAI_FREE_PROTOCOL;
   hsai_BlockA2.Init.AudioMode = SAI_MODEMASTER_TX;
@@ -87,6 +99,10 @@ void MX_SAI2_Init(void)
   {
     Error_Handler();
   }
+
+  /* USER CODE BEGIN SAI2_Init 2 */
+
+  /* USER CODE END SAI2_Init 2 */
 
 }
 static uint32_t SAI2_client =0;

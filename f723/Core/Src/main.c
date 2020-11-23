@@ -45,6 +45,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+volatile uint8_t time4_seconds_elapsed = 0;
 /* USER CODE END 0 */
 
 /**
@@ -84,9 +85,7 @@ int main(void)
   MX_ADC2_Init();
   MX_ADC3_Init();
   MX_FMC_Init();
-  MX_I2C1_Init();
-  MX_I2C2_Init();
-  MX_I2C3_Init();
+  MLX90640_I2CInit();
   MX_QUADSPI_Init();
   MX_SAI2_Init();
   MX_SPI1_Init();
@@ -101,7 +100,9 @@ int main(void)
   MX_UART7_Init();
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+  // HAL_TIM_Base_Start_IT(&htim4);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -198,7 +199,7 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 /* USER CODE END 4 */
 
-/**
+ /**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM1 interrupt took place, inside
   * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
@@ -214,6 +215,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+  if (htim->Instance == TIM4) {
+    time4_seconds_elapsed += 1;
+  }
   /* USER CODE END Callback 1 */
 }
 

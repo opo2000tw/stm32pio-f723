@@ -23,7 +23,6 @@ FRAMEWORK_DIR = platform.get_package_dir("framework-stm32cube")
 FRAMEWORK_CORE = env.BoardConfig().get("build.mcu")[5:7].lower()
 MCU_FAMILY = env.BoardConfig().get("build.mcu")[0:7]
 
-print(
-    "=========================================================[pre]=========================================================")
+print("=========================================================[pre]=========================================================")
 
 print()

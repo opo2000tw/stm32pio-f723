@@ -21,7 +21,7 @@
 
 void MLX90640_I2CInit()
 {
-  MX_I2C1_Init();
+  MX_I2C2_Init();
 }
 
 

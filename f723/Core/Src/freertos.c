@@ -31,7 +31,9 @@
 #include "MLX90640_API.h"
 #include "MLX90640_I2C_Driver.h"
 #include "lwprintf.h"
+// #include "stdio.h"
 #include "cpu_utils.h"
+#include "spi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,31 +65,45 @@ paramsMLX90640 mlx90640;
 
 static int b = 0;
 static int c = 0;
-static int temp = MLX_FPS_CAL(MLX_RATE);
+
+extern volatile uint8_t time4_seconds_elapsed;
+const uint8_t spi_data[12] = "1234567890\r\n";
+float pi = 3.14159;
+uint8_t *ptr = (uint8_t *) &pi;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
+const osThreadAttr_t defaultTask_attributes =
+{
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
-const osThreadAttr_t myTask02_attributes = {
+const osThreadAttr_t myTask02_attributes =
+{
   .name = "myTask02",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTimer01 */
 osTimerId_t myTimer01Handle;
-const osTimerAttr_t myTimer01_attributes = {
+const osTimerAttr_t myTimer01_attributes =
+{
   .name = "myTimer01"
 };
 /* Definitions for myTimer02 */
 osTimerId_t myTimer02Handle;
-const osTimerAttr_t myTimer02_attributes = {
+const osTimerAttr_t myTimer02_attributes =
+{
   .name = "myTimer02"
+};
+/* Definitions for ThermalEvent */
+osEventFlagsId_t ThermalEventHandle;
+const osEventFlagsAttr_t ThermalEvent_attributes =
+{
+  .name = "ThermalEvent"
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -166,7 +182,8 @@ void vApplicationDaemonTaskStartupHook(void)
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void) {
+void MX_FREERTOS_Init(void)
+{
   /* USER CODE BEGIN Init */
   status = MLX90640_SetRefreshRate(MLX_ADDR, MLX_RATE);
   if (status != 0)
@@ -231,6 +248,14 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
+  /* Create the event(s) */
+  /* creation of ThermalEvent */
+  ThermalEventHandle = osEventFlagsNew(&ThermalEvent_attributes);
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -249,7 +274,7 @@ void StartDefaultTask(void *argument)
   for (;;)
   {
     osDelay(1000);
-    printf("[[%d]]\r\n",c);
+    printf("[[%d]]\r\n", c);
     c = 0;
     BSP_LED_Toggle(LED_GREEN);
   }
@@ -269,16 +294,17 @@ void StartTask02(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    osDelay(MLX_FPS_CAL(MLX_RATE));
+    osDelay(1000);
 #if 1
-    printf("[%d]\r\n",b);
-    b = 0;
-    // printf("IdleCount: %u\r\n", ulIdleCycleCount);
-    // printf("CPUUsage: %d\r\n", osGetCPUUsage());
-#endif
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+    if (HAL_SPI_Transmit_IT(&hspi1, (uint8_t *)spi_data, sizeof(spi_data)) != HAL_OK)
+    {
+      printf("SPI Fail\r\n");
+    }
   }
-  /* USER CODE END StartTask02 */
+#endif
 }
+/* USER CODE END StartTask02 */
 
 /* Callback01 function */
 void Callback01(void *argument)
@@ -296,15 +322,6 @@ void Callback01(void *argument)
     b++;
     c++;
   }
-// printf("CPUUsage: %d\r\n", osGetCPUUsage());
-// #if 0
-//   float tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-//   float vdd = MLX90640_GetVdd(frame, &mlx90640);
-//   printf("v:%ft:%f\r\n", vdd, tr);
-// #else
-//   if(b%64==0)
-//     printf("b=%d\r\n", b);
-// #endif
 #if 0
   for (int i = 0; i < NELEMS(mlx90640To); i++)
   {
@@ -325,13 +342,12 @@ void Callback01(void *argument)
 void Callback02(void *argument)
 {
   /* USER CODE BEGIN Callback02 */
-
+  osThreadExit();
   /* USER CODE END Callback02 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
