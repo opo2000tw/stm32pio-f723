@@ -18,6 +18,7 @@
 /* USER CODE BEGIN Includes */
 #include "lwprintf.h"
 #include "stm32f723e_discovery.h"
+#include "MLX90640_I2C_Driver.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -85,7 +86,9 @@ int main(void)
   MX_ADC2_Init();
   MX_ADC3_Init();
   MX_FMC_Init();
-  MLX90640_I2CInit();
+  MX_I2C1_Init();
+  MX_I2C2_Init();
+  MX_I2C3_Init();
   MX_QUADSPI_Init();
   MX_SAI2_Init();
   MX_SPI1_Init();

@@ -73,36 +73,31 @@ uint8_t *ptr = (uint8_t *) &pi;
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes =
-{
+const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
-const osThreadAttr_t myTask02_attributes =
-{
+const osThreadAttr_t myTask02_attributes = {
   .name = "myTask02",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTimer01 */
 osTimerId_t myTimer01Handle;
-const osTimerAttr_t myTimer01_attributes =
-{
+const osTimerAttr_t myTimer01_attributes = {
   .name = "myTimer01"
 };
 /* Definitions for myTimer02 */
 osTimerId_t myTimer02Handle;
-const osTimerAttr_t myTimer02_attributes =
-{
+const osTimerAttr_t myTimer02_attributes = {
   .name = "myTimer02"
 };
 /* Definitions for ThermalEvent */
 osEventFlagsId_t ThermalEventHandle;
-const osEventFlagsAttr_t ThermalEvent_attributes =
-{
+const osEventFlagsAttr_t ThermalEvent_attributes = {
   .name = "ThermalEvent"
 };
 
@@ -182,8 +177,7 @@ void vApplicationDaemonTaskStartupHook(void)
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void)
-{
+void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   status = MLX90640_SetRefreshRate(MLX_ADDR, MLX_RATE);
   if (status != 0)
@@ -303,8 +297,8 @@ void StartTask02(void *argument)
     }
   }
 #endif
+  /* USER CODE END StartTask02 */
 }
-/* USER CODE END StartTask02 */
 
 /* Callback01 function */
 void Callback01(void *argument)

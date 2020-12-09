@@ -13,3 +13,36 @@ GTAGS
 Middlewares
 Drivers
 USB_HOST
+
+# ├──MLX90640-With-STM32
+# │  ├── LICENSE
+# │  ├── README.md
+# │  ├── inc
+# │  ├── library.json
+# │  └── src
+# ├──Middlewares
+# │  ├── ST
+# │  ├── Third_Party
+# │  ├── inc
+# │  ├── library.json
+# │  └── src
+# ├──README
+# ├──USB_HOST
+# │  ├── App
+# │  ├── Target
+# │  ├── inc
+# │  ├── library.json
+# │  └── src
+# ├──library.json
+# ├──lwprintf
+# │  ├── LICENSE
+# │  ├── README.md
+# │  ├── inc
+# │  ├── library.json
+# │  └── src
+# └──recursive_copy.py
+# 
+Third_Party
+ST
+App
+Target

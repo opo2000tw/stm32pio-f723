@@ -7,9 +7,6 @@
       "path": "../lib_extra"
     },
     {
-      "path": "pio_core/packages/framework-stm32cube/f7"
-    },
-    {
       "path": "../../../../Users/blakewu/Downloads/MLX90640"
     }
   ],
