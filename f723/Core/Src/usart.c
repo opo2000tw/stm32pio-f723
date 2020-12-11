@@ -21,6 +21,9 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+/* Define application custom instance */
+lwprintf_t dbg_instance;
+lwprintf_t common_instance;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart4;
@@ -392,25 +395,28 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 #if 0
 int _write(int fd, char *ptr, int len)
 {
-    int i = 0;
-    /*
-     * write "len" of char from "ptr" to file id "fd"
-     * Return number of char written.
-     *
-    * Only work for STDOUT, STDIN, and STDERR
-     */
-    if (fd > 2) { return -1; }
-    while (*ptr && (i < len))
-    {
-    HAL_UART_Transmit(&USARTx,(uint8_t*)ptr,sizeof(*ptr),10);
+  int i = 0;
+  /*
+   * write "len" of char from "ptr" to file id "fd"
+   * Return number of char written.
+   *
+  * Only work for STDOUT, STDIN, and STDERR
+   */
+  if (fd > 2)
+  {
+    return -1;
+  }
+  while (*ptr && (i < len))
+  {
+    HAL_UART_Transmit(&USARTx, (uint8_t *)ptr, sizeof(*ptr), 10);
     if (*ptr == '\n')
     {
-        HAL_UART_Transmit(&USARTx,(uint8_t*)"\r",2,10);
+      HAL_UART_Transmit(&USARTx, (uint8_t *)"\r", 2, 10);
     }
     i++;
     ptr++;
-    }
-    return i;
+  }
+  return i;
 }
 #endif
 
@@ -420,16 +426,36 @@ int _write(int fd, char *ptr, int len)
  * \param[in]       p: \ref lwprintf_t handle
  * \return          ch on success, 0 on failure
  */
-int lwprintf_my_out_func(int ch, lwprintf_t* p)
-{
-    uint8_t c = (uint8_t)ch;
 
+int lwprintf_my_out_func(int ch, lwprintf_t *p)
+{
+  if (p == &dbg_instance)
+  {
+    uint8_t c = (uint8_t)ch;
     /* Don't print zero */
-    if (c == '\0') {
-        return ch;
+    if (c == '\0')
+    {
+      return ch;
     }
-    HAL_UART_Transmit(&USARTx, &c, 1, 10);
-    return ch;
+    HAL_UART_Transmit(USARTx, &c, 1, 100);
+    /* This is custom instance 1 */
+  }
+  else if (p == &common_instance)
+  {
+    /* This is custom instance 2 */
+  }
+  else
+  {
+    uint8_t c = (uint8_t)ch;
+    /* Don't print zero */
+    if (c == '\0')
+    {
+      return ch;
+    }
+    HAL_UART_Transmit(USARTx, &c, 1, 100);
+    /* This is default instance */
+  }
+  return ch;
 }
 /* USER CODE END 1 */
 

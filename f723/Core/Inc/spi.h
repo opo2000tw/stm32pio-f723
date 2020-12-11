@@ -28,7 +28,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#define TEST_SPI_ADDRESS &hspi1
 /* USER CODE END Includes */
 
 extern SPI_HandleTypeDef hspi1;

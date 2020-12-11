@@ -70,6 +70,8 @@ extern volatile uint8_t time4_seconds_elapsed;
 const uint8_t spi_data[12] = "1234567890\r\n";
 float pi = 3.14159;
 uint8_t *ptr = (uint8_t *) &pi;
+
+uint8_t aRxBuffer[1] = {0};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -179,6 +181,11 @@ void vApplicationDaemonTaskStartupHook(void)
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
+  if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, 1) != HAL_OK)
+  {
+    /* Transfer error in transmission process */
+    Error_Handler();
+  }
   status = MLX90640_SetRefreshRate(MLX_ADDR, MLX_RATE);
   if (status != 0)
   {
@@ -204,7 +211,6 @@ void MX_FREERTOS_Init(void) {
     while (1);
   }
   printf("===%d,%d===\r\n", MLX90640_GetRefreshRate(MLX_ADDR), MLX90640_GetCurMode(MLX_ADDR));
-  printf("initialed\r\n");
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -264,13 +270,16 @@ void StartDefaultTask(void *argument)
   /* init code for USB_HOST */
   MX_USB_HOST_Init();
   /* USER CODE BEGIN StartDefaultTask */
+  printf("[StartDefaultTask]\r\n");
   /* Infinite loop */
   for (;;)
   {
+#if 1
     osDelay(1000);
     printf("[[%d]]\r\n", c);
     c = 0;
-    BSP_LED_Toggle(LED_GREEN);
+    printf("%d\r\n",aRxBuffer[0]);
+#endif
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -285,18 +294,25 @@ void StartDefaultTask(void *argument)
 void StartTask02(void *argument)
 {
   /* USER CODE BEGIN StartTask02 */
+  printf("StartTask02\r\n");
   /* Infinite loop */
   for (;;)
   {
-    osDelay(1000);
-#if 1
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
-    if (HAL_SPI_Transmit_IT(&hspi1, (uint8_t *)spi_data, sizeof(spi_data)) != HAL_OK)
-    {
-      printf("SPI Fail\r\n");
-    }
+    // osDelay(MLX_FPS_CAL(MLX_RATE));
+    // int status = MLX90640_GetFrameData(MLX_ADDR, frame);
+    // if (status < 0)
+    // {
+    //   printf("GetFrame Error: %d\r\n", status);
+    // }
+    // else
+    // {
+    //   paramsMLX90640 *params = &mlx90640;
+    //   MLX90640_CalculateTo(frame, params, emissivity, mlx90640To);
+    //   b++;
+    //   c++;
+    // }
+    osThreadExit();
   }
-#endif
   /* USER CODE END StartTask02 */
 }
 
@@ -304,6 +320,7 @@ void StartTask02(void *argument)
 void Callback01(void *argument)
 {
   /* USER CODE BEGIN Callback01 */
+#if 1
   int status = MLX90640_GetFrameData(MLX_ADDR, frame);
   if (status < 0)
   {
@@ -316,6 +333,7 @@ void Callback01(void *argument)
     b++;
     c++;
   }
+#endif
 #if 0
   for (int i = 0; i < NELEMS(mlx90640To); i++)
   {
@@ -342,6 +360,44 @@ void Callback02(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == TEST_SPI_ADDRESS)
+  {
+    /* Turn LED on: Transfer in transmission/reception process is correct */
+    BSP_LED_Toggle(LED_GREEN);
+    if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, 1) != HAL_OK)
+    {
+      /* Transfer error in transmission process */
+      Error_Handler();
+    }
+    // wTransferState = TRANSFER_COMPLETE;
+  }
+}
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == TEST_SPI_ADDRESS)
+  {
+    /* Turn LED on: Transfer in transmission/reception process is correct */
+    __HAL_SPI_RESET_HANDLE_STATE(TEST_SPI_ADDRESS);
+    if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, 1) != HAL_OK)
+    {
+      /* Transfer error in transmission process */
+      Error_Handler();
+    }
+    // wTransferState = TRANSFER_COMPLETE;
+  }
+}
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == TEST_SPI_ADDRESS)
+  {
+    /* Turn LED on: Transfer in transmission/reception process is correct */
+    BSP_LED_Toggle(LED_RED);
+
+    // wTransferState = TRANSFER_COMPLETE;
+  }
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
