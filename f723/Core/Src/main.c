@@ -16,9 +16,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stdbool.h"
 #include "lwprintf.h"
 #include "stm32f723e_discovery.h"
 #include "MLX90640_I2C_Driver.h"
+#include "MLX90640_API.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,7 +107,11 @@ int main(void)
   MX_USART6_UART_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  printf("%s", "Init\r\n");
+  if(MLX90640_I2CCheck() == true)
+  {
+    printf("MLX90640_GetRefreshRate=%d,MLX90640_GetCurMode=%d\r\n", MLX90640_GetRefreshRate(MLX_ADDR), MLX90640_GetCurMode(MLX_ADDR));
+  }
+  printf("%s", "Inited\r\n");
   /* USER CODE END 2 */
 
   /* Init scheduler */

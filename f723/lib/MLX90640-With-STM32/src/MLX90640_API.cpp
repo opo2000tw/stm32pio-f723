@@ -18,6 +18,12 @@
 #include <MLX90640_API.h>
 #include <math.h>
 
+paramsMLX90640 mlx90640;
+uint16_t eeMLX90640[832];
+float mlx90640To[768];
+uint16_t frame[834];
+float emissivity = 0.95;
+
 void ExtractVDDParameters(uint16_t *eeData, paramsMLX90640 *mlx90640);
 void ExtractPTATParameters(uint16_t *eeData, paramsMLX90640 *mlx90640);
 void ExtractGainParameters(uint16_t *eeData, paramsMLX90640 *mlx90640);
@@ -36,6 +42,38 @@ int CheckAdjacentPixels(uint16_t pix1, uint16_t pix2);
 float GetMedian(float *values, int n);
 int IsPixelBad(uint16_t pixel, paramsMLX90640 *params);
 int CheckEEPROMValid(uint16_t *eeData);
+
+bool MLX90640_I2CCheck()
+{
+  int status = MLX90640_SetRefreshRate(MLX_ADDR, MLX_RATE);
+  if (status != 0)
+  {
+    // printf("\r\nSetRefreshRate error with code:%d\r\n", status);
+    while (1);
+  }
+  status = MLX90640_SetChessMode(MLX_ADDR);
+  if (status != 0)
+  {
+    // printf("\r\nSetChessMode error with code:%d\r\n", status);
+    while (1);
+  }
+  status = MLX90640_DumpEE(MLX_ADDR, eeMLX90640);
+  if (status != 0)
+  {
+    // printf("\r\nload system parameters error with code:%d\r\n", status);
+    while (1);
+  }
+  status = MLX90640_ExtractParameters(eeMLX90640, &mlx90640);
+  if (status != 0)
+  {
+    // printf("\r\nParameter extraction failed with error code:%d\r\n", status);
+    while (1);
+  }
+  else
+  {
+    return true;
+  }
+}
 
 int MLX90640_DumpEE(uint8_t slaveAddr, uint16_t *eeData)
 {

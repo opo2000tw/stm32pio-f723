@@ -18,12 +18,10 @@
 #include "i2c.h"
 #include "MLX90640_I2C_Driver.h"
 
-
 void MLX90640_I2CInit()
 {
   MX_I2C2_Init();
 }
-
 
 int MLX90640_I2CRead(uint8_t slaveAddr, uint16_t startAddress, uint16_t nMemAddressRead, uint16_t *data)
 {
@@ -40,7 +38,6 @@ int MLX90640_I2CRead(uint8_t slaveAddr, uint16_t startAddress, uint16_t nMemAddr
     return -1;
   }
 
-
   for (cnt = 0; cnt < nMemAddressRead * 2; cnt += 2)
   {
     uint8_t tempBuffer = p[cnt + 1];
@@ -50,7 +47,6 @@ int MLX90640_I2CRead(uint8_t slaveAddr, uint16_t startAddress, uint16_t nMemAddr
 
   return 0;
 }
-
 
 int MLX90640_I2CWrite(uint8_t slaveAddr, uint16_t writeAddress, uint16_t data)
 {
@@ -82,4 +78,3 @@ int MLX90640_I2CWrite(uint8_t slaveAddr, uint16_t writeAddress, uint16_t data)
 
   return 0;
 }
-

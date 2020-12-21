@@ -81,6 +81,14 @@ int MLX90640_GetCurMode(uint8_t slaveAddr);
 int MLX90640_SetInterleavedMode(uint8_t slaveAddr);
 int MLX90640_SetChessMode(uint8_t slaveAddr);
 void MLX90640_BadPixelsCorrection(uint16_t *pixels, float *to, int mode, paramsMLX90640 *params);
+bool MLX90640_I2CCheck(void);
+
+extern paramsMLX90640 mlx90640;
+extern uint16_t eeMLX90640[832];
+extern float mlx90640To[768];
+extern float emissivity;
+extern uint16_t frame[834]; 
+
 #ifdef __cplusplus
 }
 #endif
