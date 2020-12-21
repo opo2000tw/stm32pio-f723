@@ -47,40 +47,7 @@ void MX_FREERTOS_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 volatile uint8_t time4_seconds_elapsed = 0;
-/* Exported types ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
-/* User can use this section to tailor SPIx instance used and associated
-   resources */
-/* Definition for SPIx clock resources */
-#define SPIx                             SPI1
-#define SPIx_CLK_ENABLE()                __HAL_RCC_SPI1_CLK_ENABLE()
-#define SPIx_SCK_GPIO_CLK_ENABLE()       __HAL_RCC_GPIOA_CLK_ENABLE()
-#define SPIx_MISO_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
-#define SPIx_MOSI_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
 
-#define SPIx_FORCE_RESET()               __HAL_RCC_SPI1_FORCE_RESET()
-#define SPIx_RELEASE_RESET()             __HAL_RCC_SPI1_RELEASE_RESET()
-
-/* Definition for SPIx Pins */
-#define ARD_D11_TIM3_CH2_SPI1_MOSI_Pin GPIO_PIN_5
-#define ARD_D11_TIM3_CH2_SPI1_MOSI_GPIO_Port GPIOB
-#define ARD_D12_SPI1_MISO_Pin GPIO_PIN_4
-#define ARD_D12_SPI1_MISO_GPIO_Port GPIOB
-#define SPI1_NSS_SOFT_Pin GPIO_PIN_1
-#define SPI1_NSS_SOFT_GPIO_Port GPIOA
-#define ARD_D13_SPI1_SCK_Pin GPIO_PIN_5
-#define ARD_D13_SPI1_SCK_GPIO_Port GPIOA
-/* Definition for SPIx's NVIC */
-#define SPIx_IRQn                        SPI1_IRQn
-#define SPIx_IRQHandler                  SPI1_IRQHandler
-
-/* Size of buffer */
-// #define BUFFERSIZE                       (COUNTOF(aTxBuffer) - 1)
-
-/* Exported macro ------------------------------------------------------------*/
-#define COUNTOF(__BUFFER__)   (sizeof(__BUFFER__) / sizeof(*(__BUFFER__)))
-/* Exported functions ------------------------------------------------------- */
-/* Define custom output function for print */
 /* USER CODE END 0 */
 
 /**

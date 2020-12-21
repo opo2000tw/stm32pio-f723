@@ -49,12 +49,14 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 #define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
+#define size (sizeof(float) / sizeof(uint8_t) * 768)
+#define output_size 1
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 static uint16_t eeMLX90640[832];
-static float mlx90640To[768];
+float mlx90640To[size];
 uint16_t frame[834];
 float emissivity = 0.95;
 int status;
@@ -71,35 +73,41 @@ const uint8_t spi_data[12] = "1234567890\r\n";
 float pi = 3.14159;
 uint8_t *ptr = (uint8_t *) &pi;
 
-uint8_t aRxBuffer[1] = {0};
+uint8_t aRxBuffer[output_size] = {0};
+uint8_t aTxBuffer[2] = {0};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
+const osThreadAttr_t defaultTask_attributes =
+{
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
-const osThreadAttr_t myTask02_attributes = {
+const osThreadAttr_t myTask02_attributes =
+{
   .name = "myTask02",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTimer01 */
 osTimerId_t myTimer01Handle;
-const osTimerAttr_t myTimer01_attributes = {
+const osTimerAttr_t myTimer01_attributes =
+{
   .name = "myTimer01"
 };
 /* Definitions for myTimer02 */
 osTimerId_t myTimer02Handle;
-const osTimerAttr_t myTimer02_attributes = {
+const osTimerAttr_t myTimer02_attributes =
+{
   .name = "myTimer02"
 };
 /* Definitions for ThermalEvent */
 osEventFlagsId_t ThermalEventHandle;
-const osEventFlagsAttr_t ThermalEvent_attributes = {
+const osEventFlagsAttr_t ThermalEvent_attributes =
+{
   .name = "ThermalEvent"
 };
 
@@ -179,9 +187,10 @@ void vApplicationDaemonTaskStartupHook(void)
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void) {
+void MX_FREERTOS_Init(void)
+{
   /* USER CODE BEGIN Init */
-  if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, 1) != HAL_OK)
+  if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
   {
     /* Transfer error in transmission process */
     Error_Handler();
@@ -275,10 +284,10 @@ void StartDefaultTask(void *argument)
   for (;;)
   {
 #if 1
-    osDelay(1000);
+    osDelay(30);
     printf("[[%d]]\r\n", c);
     c = 0;
-    printf("%d\r\n",aRxBuffer[0]);
+    printf("%d\r\n", aRxBuffer[0]);
 #endif
   }
   /* USER CODE END StartDefaultTask */
@@ -366,38 +375,48 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
   {
     /* Turn LED on: Transfer in transmission/reception process is correct */
     BSP_LED_Toggle(LED_GREEN);
-    if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, 1) != HAL_OK)
+    if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
     {
       /* Transfer error in transmission process */
       Error_Handler();
     }
-    // wTransferState = TRANSFER_COMPLETE;
+    // if (HAL_SPI_Transmit_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, 1) != HAL_OK)
+    // {
+    //   Error_Handler();
+    // }
   }
 }
 void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == TEST_SPI_ADDRESS)
   {
-    /* Turn LED on: Transfer in transmission/reception process is correct */
-    __HAL_SPI_RESET_HANDLE_STATE(TEST_SPI_ADDRESS);
-    if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, 1) != HAL_OK)
-    {
-      /* Transfer error in transmission process */
-      Error_Handler();
-    }
-    // wTransferState = TRANSFER_COMPLETE;
+    Error_Handler();
   }
 }
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == TEST_SPI_ADDRESS)
   {
-    /* Turn LED on: Transfer in transmission/reception process is correct */
-    BSP_LED_Toggle(LED_RED);
-
-    // wTransferState = TRANSFER_COMPLETE;
+    if (HAL_SPI_Receive_IT(TEST_SPI_ADDRESS, (uint8_t *)aRxBuffer, 1) != HAL_OK)
+    {
+      /* Transfer error in transmission process */
+      Error_Handler();
+    }
   }
 }
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == TEST_SPI_ADDRESS)
+  {
+    if (HAL_SPI_TransmitReceive_IT(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer,
+                                   output_size) != HAL_OK)
+    {
+      /* Transfer error in transmission process */
+      Error_Handler();
+    }
+  }
+}
+
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
