@@ -83,8 +83,6 @@ void Error_Handler(void);
 #define PSRAM_NE1_GPIO_Port GPIOD
 #define UART_TXD_WIFI_RX_Pin GPIO_PIN_12
 #define UART_TXD_WIFI_RX_GPIO_Port GPIOC
-#define STMOD__TIM2_CH1_2_ETR_Pin GPIO_PIN_15
-#define STMOD__TIM2_CH1_2_ETR_GPIO_Port GPIOA
 #define ARD_D8_GPIO_Pin GPIO_PIN_4
 #define ARD_D8_GPIO_GPIO_Port GPIOE
 #define ARD_D3_TIM9_CH1_Pin GPIO_PIN_5
