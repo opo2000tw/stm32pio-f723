@@ -4,6 +4,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "quadspi.h"
 #include "sai.h"
@@ -85,6 +86,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
@@ -107,11 +109,12 @@ int main(void)
   MX_USART6_UART_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  if(MLX90640_I2CCheck() == true)
+  HAL_TIM_Base_Start_IT(&htim4);
+  if (MLX90640_I2CCheck() == true)
   {
     printf("MLX90640_GetRefreshRate=%d,MLX90640_GetCurMode=%d\r\n", MLX90640_GetRefreshRate(MLX_ADDR), MLX90640_GetCurMode(MLX_ADDR));
   }
-  printf("%s", "Inited\r\n");
+  printf("Inited,i2c frame rate = %dms\r\n", MLX_FPS_CAL(MLX_RATE));
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -241,8 +244,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+  __NOP();
   while (1)
   {
+    NVIC_SystemReset();
     BSP_LED_Toggle(LED_RED);
     HAL_Delay(1000);
   }

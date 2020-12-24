@@ -29,7 +29,7 @@ extern "C" {
 #define MLX_FPS_16HZ  0x05
 #define MLX_FPS_32HZ  0x06
 #define MLX_FPS_64HZ  0x07
-#define MLX_FPS_CAL(x) (1000 / (1 << (x - 1)))
+#define MLX_FPS_CAL(x) ((1000 / (1 << (x - 1)))-12)
 #define MLX_ADDR 0x33
 #define MLX_RATE MLX_FPS_64HZ
 #define TA_SHIFT 8 //Default shift for MLX90640 in open air
@@ -83,6 +83,7 @@ int MLX90640_SetChessMode(uint8_t slaveAddr);
 void MLX90640_BadPixelsCorrection(uint16_t *pixels, float *to, int mode, paramsMLX90640 *params);
 bool MLX90640_I2CCheck(void);
 
+extern float copy_mlx90640To[768];
 extern paramsMLX90640 mlx90640;
 extern uint16_t eeMLX90640[832];
 extern float mlx90640To[768];

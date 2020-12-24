@@ -22,6 +22,7 @@ paramsMLX90640 mlx90640;
 uint16_t eeMLX90640[832];
 float mlx90640To[768];
 uint16_t frame[834];
+float copy_mlx90640To[768];
 float emissivity = 0.95;
 
 void ExtractVDDParameters(uint16_t *eeData, paramsMLX90640 *mlx90640);
@@ -99,7 +100,7 @@ int MLX90640_GetFrameData(uint8_t slaveAddr, uint16_t *frameData)
     dataReady = statusRegister & 0x0008;
   }
 
-  while (dataReady != 0 && cnt < 5)
+  while (dataReady != 0 && cnt < 3)
   {
     error = MLX90640_I2CWrite(slaveAddr, 0x8000, 0x0030);
     if (error == -1)
@@ -122,7 +123,7 @@ int MLX90640_GetFrameData(uint8_t slaveAddr, uint16_t *frameData)
     cnt = cnt + 1;
   }
 
-  if (cnt > 4)
+  if (cnt > 2)
   {
     return -8;
   }

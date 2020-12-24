@@ -8,6 +8,9 @@
     },
     {
       "path": "../../../../Users/blakewu/Downloads/MLX90640"
+    },
+    {
+      "path": "../pio-stm32cube-package-creator/STM32CubeF7/Drivers/STM32F7xx_HAL_Driver"
     }
   ],
 	"settings": {
