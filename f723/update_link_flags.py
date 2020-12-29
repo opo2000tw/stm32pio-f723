@@ -25,7 +25,7 @@ MCU_FAMILY = env.BoardConfig().get("build.mcu")[0:7]
 
 print("=========================================================[post]=========================================================")
 
-t_path = "./pio_core/packages/framework-stm32cube/f7/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_conf.h"
+t_path = "./pio_core/packages/framework-stm32cubef7/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_conf.h"
 xx_hal_conf = Path(t_path)
 print("[-]"+xx_hal_conf.name)
 xx_hal_conf.unlink()
