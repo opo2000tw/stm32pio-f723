@@ -308,7 +308,11 @@ void Callback01(void *argument)
     // {
     //   printf("osSemaphoreAcquire empty_idHandle 0:%d\r\n", spi_state);
     // }
-    MLX90640_CalculateTo(frame, &mlx90640, emissivity, mlx90640To);
+    float vdd = MLX90640_GetVdd(frame, &mlx90640);
+    float Ta = MLX90640_GetTa(frame, &mlx90640);
+    float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
+    MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To);
     // printf("producer\r\n");
     printf("--[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
            mlx90640To[0], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
