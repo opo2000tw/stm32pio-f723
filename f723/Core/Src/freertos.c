@@ -249,17 +249,19 @@ void StartDefaultTask(void *argument)
     osDelay(5);
     printf("Init, NSS fail\r\n");
   }
-  if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  // if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
+  // {
+  //   Error_Handler();
+  // }
   /* Infinite loop */
   for (;;)
   {
-    osDelay(1000);
-    osEventFlagsWait(ThermalEventHandle, spi_evt_id, osFlagsWaitAny, osWaitForever);
+    osDelay(MLX_FPS_CAL(MLX_RATE));
+    // osEventFlagsWait(ThermalEventHandle, spi_evt_id, osFlagsWaitAny, osWaitForever);
 #if 1
     printf("[[%d]]\r\n", c);
+    printf("[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+           mlx90640To[0], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
     c = 0;
 #endif
   }
@@ -301,23 +303,36 @@ void Callback01(void *argument)
   }
   else
   {
-    spi_state = osSemaphoreAcquire(empty_idHandle, osWaitForever);
-    if (spi_state != osOK)
-    {
-      printf("osSemaphoreAcquire empty_idHandle 0:%d\r\n", spi_state);
-    }
+    // spi_state = osSemaphoreAcquire(empty_idHandle, osWaitForever);
+    // if (spi_state != osOK)
+    // {
+    //   printf("osSemaphoreAcquire empty_idHandle 0:%d\r\n", spi_state);
+    // }
     MLX90640_CalculateTo(frame, &mlx90640, emissivity, mlx90640To);
     // printf("producer\r\n");
-    // printf("[%2.2f],[%2.2f],[%2.2f],[%2.2f]\r\n",
-    //        mlx90640To[0], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
-    spi_state = osSemaphoreRelease(filled_idHandle);
-    if (spi_state != osOK)
+    printf("--[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+           mlx90640To[0], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
+    if ((mlx90640To[0] > 300) || (mlx90640To[128] > 300) || (mlx90640To[256] > 300) || (mlx90640To[768 - 1] > 300))
     {
-      printf("osSemaphoreRelease filled_idHandle 0:%d\r\n", spi_state);
+      __NOP();
+      // spi_state = osSemaphoreRelease(empty_idHandle);
     }
+    if (isnan(mlx90640To[0]) || isnan(mlx90640To[128]) || isnan(mlx90640To[256]) || isnan(mlx90640To[768 - 1]))
+    {
+      __NOP();
+      // spi_state = osSemaphoreRelease(empty_idHandle);
+    }
+    // else
+    // {
+    //   spi_state = osSemaphoreRelease(filled_idHandle);
+    // }
+    // if (spi_state != osOK)
+    // {
+    //   printf("osSemaphoreRelease filled_idHandle 0:%d\r\n", spi_state);
+    // }
     c++;
   }
-#if 0
+#if 1
   printf("sub:%d\r\n", MLX90640_GetSubPageNumber(frame));
 #endif
   /* USER CODE END Callback01 */
