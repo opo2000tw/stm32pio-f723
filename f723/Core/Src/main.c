@@ -114,11 +114,10 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
   // HAL_TIM_Base_Start_IT(&htim4);
-  if (MLX90640_I2CCheck() == true)
+  if (MLX90640_I2CCheck() != true)
   {
-    printf("MLX90640_GetRefreshRate=%d,MLX90640_GetCurMode=%d\r\n", MLX90640_GetRefreshRate(MLX_ADDR), MLX90640_GetCurMode(MLX_ADDR));
+    Error_Handler();
   }
-  printf("Inited,i2c frame rate = %dms\r\n", MLX_FPS_CAL(MLX_RATE));
   /* USER CODE END 2 */
 
   /* Init scheduler */

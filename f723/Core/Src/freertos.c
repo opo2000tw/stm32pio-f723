@@ -51,7 +51,8 @@ static void spi_process(void);
 #define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
 #define size (sizeof(float) / sizeof(uint8_t) * 768)
 #define output_size (3072)
-#define spi_evt_id 0x0001
+#define spi_evt_id 0x00000001
+#define i2c_evt_id 0x00000002
 uint8_t error_flag = 0;
 osStatus_t spi_state;
 // #define output_size 5
@@ -62,7 +63,7 @@ osStatus_t spi_state;
 uint16_t CPUUsage;
 int cnt = 0;
 uint8_t test_flag = 0;
-static int c = 0;
+static int i2cEvent, spiEvent, errEvent;
 extern volatile uint8_t time4_seconds_elapsed;
 
 uint8_t aRxBuffer[output_size] = {0};
@@ -106,6 +107,11 @@ const osSemaphoreAttr_t filled_id_attributes = {
 osEventFlagsId_t ThermalEventHandle;
 const osEventFlagsAttr_t ThermalEvent_attributes = {
   .name = "ThermalEvent"
+};
+/* Definitions for Thermal1sEvent */
+osEventFlagsId_t Thermal1sEventHandle;
+const osEventFlagsAttr_t Thermal1sEvent_attributes = {
+  .name = "Thermal1sEvent"
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -206,6 +212,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of ThermalEvent */
   ThermalEventHandle = osEventFlagsNew(&ThermalEvent_attributes);
 
+  /* creation of Thermal1sEvent */
+  Thermal1sEventHandle = osEventFlagsNew(&Thermal1sEvent_attributes);
+
   /* USER CODE BEGIN RTOS_EVENTS */
   /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
@@ -245,11 +254,10 @@ void StartDefaultTask(void *argument)
   for (;;)
   {
     // osDelay(MLX_FPS_CAL(MLX_RATE));
-    osEventFlagsWait(ThermalEventHandle, spi_evt_id, osFlagsWaitAny, osWaitForever);
-    printf("[[%d]]\r\n", c);
-    // printf("[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-    //        mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
-    c = 0;
+    osEventFlagsWait(ThermalEventHandle, spi_evt_id | i2c_evt_id, osFlagsWaitAll, osWaitForever);
+    printf("slot:spi[[%02d]],i2c[[%02d]],err[%02d]\r\n", spiEvent, i2cEvent, errEvent);
+    printf("[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+           mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -267,7 +275,14 @@ void StartTask02(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    osThreadExit();
+    // osDelay(MLX_FPS_CAL(MLX_RATE));
+    osDelay(1000);
+    osEventFlagsWait(Thermal1sEventHandle, spi_evt_id | i2c_evt_id, osFlagsWaitAll, osWaitForever);
+    printf("1s:spi[[%02d]],i2c[[%02d]],err[%02d]\r\n", spiEvent, i2cEvent, errEvent);
+    spiEvent = 0;
+    i2cEvent = 0;
+    // printf("[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+    //        mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
   }
   /* USER CODE END StartTask02 */
 }
@@ -311,12 +326,11 @@ void Callback01(void *argument)
     {
       printf("osSemaphoreRelease filled_idHandle 0:%d\r\n", spi_state);
     }
-    c++;
+    i2cEvent++;
   }
-#if 1
   printf("sub:%d\r\n", MLX90640_GetSubPageNumber(frame));
-  osEventFlagsSet(ThermalEventHandle, spi_evt_id);
-#endif
+  osEventFlagsSet(ThermalEventHandle, i2c_evt_id);
+  osEventFlagsSet(Thermal1sEventHandle, i2c_evt_id);
   /* USER CODE END Callback01 */
 }
 
@@ -343,23 +357,28 @@ static void spi_process(void)
   error_flag = 2;
   if (check == 0xFF)
   {
+    spiEvent++;
     if (error_flag == 1)
     {
       printf("err:%d", error_flag);
     }
+#if 0
+    printf("rx:%d,tx:%d\r\n", __HAL_DMA_GET_COUNTER(&hdma_spi1_rx), __HAL_DMA_GET_COUNTER(&hdma_spi1_tx));
+#endif
     // while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
     // {
     // }
-    if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
-    {
-      Error_Handler();
-    }
+    // if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
+    // {
+    //   Error_Handler();
+    // }
   }
   else
   {
-    printf("a:%x,rx:%d,tx:%d,err:%d\r\n", aRxBuffer[0], __HAL_DMA_GET_COUNTER(&hdma_spi1_rx), __HAL_DMA_GET_COUNTER(&hdma_spi1_tx), error_flag);
+    errEvent++;
     printf("reserved\r\n");
-    HAL_SPI_Abort_IT(TEST_SPI_ADDRESS);
+    // HAL_SPI_Abort_IT(TEST_SPI_ADDRESS);
+    Error_Handler();
   }
   error_flag = 0;
   spi_state = osSemaphoreRelease(empty_idHandle);
@@ -388,16 +407,18 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == TEST_SPI_ADDRESS)
   {
+    printf("HAL_SPI_ErrorCallback");
     spi_process();
     BSP_LED_Toggle(LED_GREEN);
     osEventFlagsSet(ThermalEventHandle, spi_evt_id);
+    osEventFlagsSet(Thermal1sEventHandle, spi_evt_id);
   }
 }
 void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == TEST_SPI_ADDRESS)
   {
-    printf("a:%x,rx:%d,tx:%d,err:%d\r\n", aRxBuffer[0], __HAL_DMA_GET_COUNTER(&hdma_spi1_rx), __HAL_DMA_GET_COUNTER(&hdma_spi1_tx), error_flag);
+    printf("HAL_SPI_ErrorCallback");
     Error_Handler();
   }
 }
@@ -408,6 +429,7 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     spi_process();
     BSP_LED_Toggle(LED_GREEN);
     osEventFlagsSet(ThermalEventHandle, spi_evt_id);
+    osEventFlagsSet(Thermal1sEventHandle, spi_evt_id);
   }
 }
 /* USER CODE END Application */
