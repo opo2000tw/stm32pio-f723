@@ -28,8 +28,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-#define output_size (3072+4)
-extern uint8_t aRxBuffer[output_size];
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -186,11 +184,11 @@ void TIM4_IRQHandler(void)
 void DMA2_Stream0_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
-  __NOP();
+
   /* USER CODE END DMA2_Stream0_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_spi1_rx);
   /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
-
+  printf("rx:%d,tx:%d\r\n", __HAL_DMA_GET_COUNTER(&hdma_spi1_rx), __HAL_DMA_GET_COUNTER(&hdma_spi1_tx));
   /* USER CODE END DMA2_Stream0_IRQn 1 */
 }
 

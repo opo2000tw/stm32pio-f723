@@ -52,6 +52,7 @@ static void spi_process(void);
 #define size (sizeof(float) / sizeof(uint8_t) * 768)
 #define output_size (3072)
 #define spi_evt_id 0x0001
+uint8_t error_flag = 0;
 osStatus_t spi_state;
 // #define output_size 5
 /* USER CODE END PM */
@@ -69,48 +70,41 @@ uint8_t aTxBuffer[output_size] = {0};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes =
-{
+const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
-const osThreadAttr_t myTask02_attributes =
-{
+const osThreadAttr_t myTask02_attributes = {
   .name = "myTask02",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTimer01 */
 osTimerId_t myTimer01Handle;
-const osTimerAttr_t myTimer01_attributes =
-{
+const osTimerAttr_t myTimer01_attributes = {
   .name = "myTimer01"
 };
 /* Definitions for myTimer02 */
 osTimerId_t myTimer02Handle;
-const osTimerAttr_t myTimer02_attributes =
-{
+const osTimerAttr_t myTimer02_attributes = {
   .name = "myTimer02"
 };
 /* Definitions for empty_id */
 osSemaphoreId_t empty_idHandle;
-const osSemaphoreAttr_t empty_id_attributes =
-{
+const osSemaphoreAttr_t empty_id_attributes = {
   .name = "empty_id"
 };
 /* Definitions for filled_id */
 osSemaphoreId_t filled_idHandle;
-const osSemaphoreAttr_t filled_id_attributes =
-{
+const osSemaphoreAttr_t filled_id_attributes = {
   .name = "filled_id"
 };
 /* Definitions for ThermalEvent */
 osEventFlagsId_t ThermalEventHandle;
-const osEventFlagsAttr_t ThermalEvent_attributes =
-{
+const osEventFlagsAttr_t ThermalEvent_attributes = {
   .name = "ThermalEvent"
 };
 
@@ -161,8 +155,7 @@ void vApplicationDaemonTaskStartupHook(void)
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void)
-{
+void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   HAL_SPIEx_FlushRxFifo(TEST_SPI_ADDRESS);
   /* USER CODE END Init */
@@ -231,39 +224,32 @@ void StartDefaultTask(void *argument)
   /* init code for USB_HOST */
   MX_USB_HOST_Init();
   /* USER CODE BEGIN StartDefaultTask */
-  int mlx_status = MLX90640_GetFrameData(MLX_ADDR, frame);
-  while (mlx_status < 0)
+  int status = MLX90640_SynchFrame(MLX_ADDR);
+  if (status != 0)
   {
-    cnt++;
-    mlx_status = MLX90640_GetFrameData(MLX_ADDR, frame);
-    printf("Init, GetFrame Error: %d\r\n", mlx_status);
-    osDelay(MLX_FPS_CAL(MLX_RATE));
-    if (cnt >= 5)
-    {
-      NVIC_SystemReset();
-      cnt = 0;
-    }
+    printf("\r\nMLX90640_SynchFrame failed with error code:%d\r\n", status);
+    while (1);
   }
   while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
   {
     osDelay(5);
     printf("Init, NSS fail\r\n");
   }
-  // if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
-  // {
-  //   Error_Handler();
-  // }
+#if 1
+  if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
+  {
+    Error_Handler();
+  }
+#endif
   /* Infinite loop */
   for (;;)
   {
-    osDelay(MLX_FPS_CAL(MLX_RATE));
-    // osEventFlagsWait(ThermalEventHandle, spi_evt_id, osFlagsWaitAny, osWaitForever);
-#if 1
+    // osDelay(MLX_FPS_CAL(MLX_RATE));
+    osEventFlagsWait(ThermalEventHandle, spi_evt_id, osFlagsWaitAny, osWaitForever);
     printf("[[%d]]\r\n", c);
-    printf("[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-           mlx90640To[0], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
+    // printf("[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+    //        mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
     c = 0;
-#endif
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -291,7 +277,8 @@ void Callback01(void *argument)
 {
   /* USER CODE BEGIN Callback01 */
   cnt = 0;
-  int status = MLX90640_GetFrameData(MLX_ADDR, frame);
+  int status = 0;
+  status = MLX90640_GetFrameData(MLX_ADDR, frame);
   if (status < 0)
   {
     cnt++;
@@ -303,41 +290,32 @@ void Callback01(void *argument)
   }
   else
   {
-    // spi_state = osSemaphoreAcquire(empty_idHandle, osWaitForever);
-    // if (spi_state != osOK)
-    // {
-    //   printf("osSemaphoreAcquire empty_idHandle 0:%d\r\n", spi_state);
-    // }
+    spi_state = osSemaphoreAcquire(empty_idHandle, osWaitForever);
+    if (spi_state != osOK)
+    {
+      // printf("osSemaphoreAcquire empty_idHandle 0:%d\r\n", spi_state);
+    }
     float vdd = MLX90640_GetVdd(frame, &mlx90640);
     float Ta = MLX90640_GetTa(frame, &mlx90640);
     float tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
     //printf("vdd:  %f Tr: %f\r\n",vdd,tr);
+    if (error_flag == 2)
+    {
+      printf("err:%d", error_flag);
+    }
+    error_flag = 1;
     MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To);
-    // printf("producer\r\n");
-    printf("--[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-           mlx90640To[0], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
-    if ((mlx90640To[0] > 300) || (mlx90640To[128] > 300) || (mlx90640To[256] > 300) || (mlx90640To[768 - 1] > 300))
+    error_flag = 0;
+    spi_state = osSemaphoreRelease(filled_idHandle);
+    if (spi_state != osOK)
     {
-      __NOP();
-      // spi_state = osSemaphoreRelease(empty_idHandle);
+      printf("osSemaphoreRelease filled_idHandle 0:%d\r\n", spi_state);
     }
-    if (isnan(mlx90640To[0]) || isnan(mlx90640To[128]) || isnan(mlx90640To[256]) || isnan(mlx90640To[768 - 1]))
-    {
-      __NOP();
-      // spi_state = osSemaphoreRelease(empty_idHandle);
-    }
-    // else
-    // {
-    //   spi_state = osSemaphoreRelease(filled_idHandle);
-    // }
-    // if (spi_state != osOK)
-    // {
-    //   printf("osSemaphoreRelease filled_idHandle 0:%d\r\n", spi_state);
-    // }
     c++;
   }
 #if 1
   printf("sub:%d\r\n", MLX90640_GetSubPageNumber(frame));
+  osEventFlagsSet(ThermalEventHandle, spi_evt_id);
 #endif
   /* USER CODE END Callback01 */
 }
@@ -362,15 +340,28 @@ static void spi_process(void)
   {
     printf("osSemaphoreAcquire filled_idHandle 1:%d\r\n", spi_state);
   }
-  if (type == 0xFB && check == 0xFF)
+  error_flag = 2;
+  if (check == 0xFF)
   {
-    HAL_SPIEx_FlushRxFifo(TEST_SPI_ADDRESS);
+    if (error_flag == 1)
+    {
+      printf("err:%d", error_flag);
+    }
+    // while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
+    // {
+    // }
+    if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer, output_size) != HAL_OK)
+    {
+      Error_Handler();
+    }
   }
   else
   {
+    printf("a:%x,rx:%d,tx:%d,err:%d\r\n", aRxBuffer[0], __HAL_DMA_GET_COUNTER(&hdma_spi1_rx), __HAL_DMA_GET_COUNTER(&hdma_spi1_tx), error_flag);
     printf("reserved\r\n");
     HAL_SPI_Abort_IT(TEST_SPI_ADDRESS);
   }
+  error_flag = 0;
   spi_state = osSemaphoreRelease(empty_idHandle);
   if (spi_state != osOK)
   {
@@ -397,8 +388,8 @@ void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == TEST_SPI_ADDRESS)
   {
-    BSP_LED_Toggle(LED_GREEN);
     spi_process();
+    BSP_LED_Toggle(LED_GREEN);
     osEventFlagsSet(ThermalEventHandle, spi_evt_id);
   }
 }
@@ -406,6 +397,7 @@ void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == TEST_SPI_ADDRESS)
   {
+    printf("a:%x,rx:%d,tx:%d,err:%d\r\n", aRxBuffer[0], __HAL_DMA_GET_COUNTER(&hdma_spi1_rx), __HAL_DMA_GET_COUNTER(&hdma_spi1_tx), error_flag);
     Error_Handler();
   }
 }
@@ -413,12 +405,11 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
   if (hspi == TEST_SPI_ADDRESS)
   {
-    BSP_LED_Toggle(LED_GREEN);
     spi_process();
+    BSP_LED_Toggle(LED_GREEN);
     osEventFlagsSet(ThermalEventHandle, spi_evt_id);
   }
 }
-
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
