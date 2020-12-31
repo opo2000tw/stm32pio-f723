@@ -19,7 +19,7 @@ from SCons.Script import DefaultEnvironment
 env = DefaultEnvironment()
 platform = env.PioPlatform()
 
-FRAMEWORK_DIR = platform.get_package_dir("framework-stm32cube")
+FRAMEWORK_DIR = platform.get_package_dir("framework-stm32cubef7")
 FRAMEWORK_CORE = env.BoardConfig().get("build.mcu")[5:7].lower()
 MCU_FAMILY = env.BoardConfig().get("build.mcu")[0:7]
 

@@ -113,7 +113,6 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-  // HAL_TIM_Base_Start_IT(&htim4);
   if (MLX90640_I2CCheck() != true)
   {
     Error_Handler();
@@ -220,9 +219,6 @@ void SystemClock_Config(void)
   */
 static void MX_NVIC_Init(void)
 {
-  /* TIM4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(TIM4_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(TIM4_IRQn);
   /* DMA2_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
@@ -256,10 +252,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-  if (htim->Instance == TIM4)
-  {
-    time4_seconds_elapsed += 1;
-  }
+
   /* USER CODE END Callback 1 */
 }
 
@@ -270,12 +263,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  __NOP();
+  __NOP(); //
+  BSP_LED_Toggle(LED_RED);
   while (1)
   {
     NVIC_SystemReset();
-    BSP_LED_Toggle(LED_RED);
-    HAL_Delay(1000);
   }
   /* USER CODE END Error_Handler_Debug */
 }
@@ -291,6 +283,7 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
+  BSP_LED_Toggle(LED_RED);
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   printf("Wrong parameters value: file %s on line %d\r\n", file, line);
