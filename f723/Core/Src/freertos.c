@@ -55,7 +55,6 @@ static void spi_process(void);
 #define qqq_evt_id 0x00000004
 float vdd, Ta, tr;
 int subPage;
-uint8_t error_flag = 0;
 osStatus_t spi_state;
 /* USER CODE END PM */
 
@@ -71,46 +70,54 @@ uint8_t aTxBuffer[DMA_U8_OUTPUT_SIZE]__attribute__((aligned (4))) = {0};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
+const osThreadAttr_t defaultTask_attributes =
+{
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
-const osThreadAttr_t myTask02_attributes = {
+const osThreadAttr_t myTask02_attributes =
+{
   .name = "myTask02",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTimer01 */
 osTimerId_t myTimer01Handle;
-const osTimerAttr_t myTimer01_attributes = {
+const osTimerAttr_t myTimer01_attributes =
+{
   .name = "myTimer01"
 };
 /* Definitions for myTimer02 */
 osTimerId_t myTimer02Handle;
-const osTimerAttr_t myTimer02_attributes = {
+const osTimerAttr_t myTimer02_attributes =
+{
   .name = "myTimer02"
 };
 /* Definitions for empty_id */
 osSemaphoreId_t empty_idHandle;
-const osSemaphoreAttr_t empty_id_attributes = {
+const osSemaphoreAttr_t empty_id_attributes =
+{
   .name = "empty_id"
 };
 /* Definitions for filled_id */
 osSemaphoreId_t filled_idHandle;
-const osSemaphoreAttr_t filled_id_attributes = {
+const osSemaphoreAttr_t filled_id_attributes =
+{
   .name = "filled_id"
 };
 /* Definitions for ThermalEvent */
 osEventFlagsId_t ThermalEventHandle;
-const osEventFlagsAttr_t ThermalEvent_attributes = {
+const osEventFlagsAttr_t ThermalEvent_attributes =
+{
   .name = "ThermalEvent"
 };
 /* Definitions for Thermal1sEvent */
 osEventFlagsId_t Thermal1sEventHandle;
-const osEventFlagsAttr_t Thermal1sEvent_attributes = {
+const osEventFlagsAttr_t Thermal1sEvent_attributes =
+{
   .name = "Thermal1sEvent"
 };
 
@@ -161,7 +168,8 @@ void vApplicationDaemonTaskStartupHook(void)
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void) {
+void MX_FREERTOS_Init(void)
+{
   /* USER CODE BEGIN Init */
   HAL_SPIEx_FlushRxFifo(TEST_SPI_ADDRESS);
   /* USER CODE END Init */
@@ -255,7 +263,6 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for (;;)
   {
-    osDelay(MLX_FPS_CAL(MLX_RATE));
     osEventFlagsWait(ThermalEventHandle, spi_evt_id | i2c_evt_id, osFlagsWaitAll, osWaitForever);
     printf("------------\r\n");
     // printf("subPage:%d,vdd:%2.3f,tr:%2.3f\r\n", subPage, vdd, tr);
@@ -265,13 +272,6 @@ void StartDefaultTask(void *argument)
       printf("sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
              subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
     }
-#if BUFFER_ENABLE == 1
-    else if (buffer_tag == BUFFER_B)
-    {
-      printf("sub=[%d],BUFF_B=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-             subPage, mlx90640To[768], mlx90640To[768 + 127], mlx90640To[768 + 128], mlx90640To[768 + 256], mlx90640To[768 + 768 - 1]);
-    }
-#endif
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -291,7 +291,10 @@ void StartTask02(void *argument)
   {
     osDelay(1000);
     // osEventFlagsWait(Thermal1sEventHandle, spi_evt_id | i2c_evt_id, osFlagsWaitAll, osWaitForever);
-    printf("1s:spi[%02d],i2c[%02d],err[%d]\r\n", mlx_event.spi, mlx_event.i2c, mlx_event.err);
+    printf("1s:spi[%02d],i2c[%02d]\r\n", mlx_event.spi, mlx_event.i2c);
+    printf("err:fc[%d],fd[%d],init[%d],vd[%d],tr[%d]\r\n",
+           mlx_event.frame_check_err, mlx_event.frame_data_err, mlx_event.init_err,
+           mlx_event.vdd_err, mlx_event.tr_err);
     mlx_event.spi = 0;
     mlx_event.i2c = 0;
   }
@@ -302,13 +305,14 @@ void StartTask02(void *argument)
 void Callback01(void *argument)
 {
   /* USER CODE BEGIN Callback01 */
-  int status = 0;
-error:
-  status = MLX90640_GetFrameData(MLX_ADDR, frame);
-  if (status < 0)
+  int frame_ready_status;
+cb_01_error:
+  frame_ready_status = MLX90640_GetFrameData(MLX_ADDR, frame);
+  if (frame_ready_status < 0)
   {
-    printf("GetFrame Error: [%d]\r\n", status);
-    goto error;
+    printf("GetFrame Error: [%d]\r\n", frame_ready_status);
+    mlx_event.init_err++;
+    goto cb_01_error;
   }
   else
   {
@@ -316,7 +320,7 @@ error:
     if (subPage >= 2 || subPage < 0)
     {
       printf("subPage Error: [%d]\r\n", subPage);
-      goto error;
+      goto cb_01_error;
     }
     // spi_state = osSemaphoreAcquire(empty_idHandle, osWaitForever);
     // if (spi_state != osOK)
@@ -326,26 +330,21 @@ error:
     vdd = MLX90640_GetVdd(frame, &mlx90640);
     if (vdd <= 0)
     {
-      goto error;
+      mlx_event.vdd_err++;
+      goto cb_01_error;
     }
-    Ta = MLX90640_GetTa(frame, &mlx90640);
-    tr = Ta - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    if (tr > TEMPERATURE_MAXIMUM || tr <= TEMPERATURE_MINIMUM)
+    {
+      mlx_event.tr_err++;
+      goto cb_01_error;
+    }
     if (buffer_tag == BUFFER_A)
     {
       MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To, buffer_tag);
-      // printf("cb_sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-      //        subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
-      buffer_tag = BUFFER_B;
+      printf("cb_sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+             subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
     }
-#if BUFFER_ENABLE == 1
-    else if (buffer_tag == BUFFER_B)
-    {
-      MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To, buffer_tag);
-      // printf("cb_sub=[%d],BUFF_B=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-      //        subPage, mlx90640To[768], mlx90640To[768 + 127], mlx90640To[768 + 128], mlx90640To[768 + 256], mlx90640To[768 + 768 - 1]);
-      buffer_tag = BUFFER_A;
-    }
-#endif
     // spi_state = osSemaphoreRelease(filled_idHandle);
     // if (spi_state != osOK)
     // {
@@ -369,23 +368,17 @@ void Callback02(void *argument)
 /* USER CODE BEGIN Application */
 static void spi_process(void)
 {
-  SPI_HandleTypeDef *hspi = TEST_SPI_ADDRESS;
-  uint8_t type = aRxBuffer[0];
   uint8_t check = aRxBuffer[DMA_U8_OUTPUT_SIZE - 1];
-  // printf("type=0x%X,end=%X\r\n", type, check);
+  uint8_t type = aRxBuffer[0];
+  printf("type=0x%X,end=%X\r\n", type, check);
   // spi_state = osSemaphoreAcquire(filled_idHandle, 0);
   // if (spi_state != osOK)
   // {
   //   printf("osSemaphoreAcquire filled_idHandle 1:%d\r\n", spi_state);
   // }
-  error_flag = 2;
   if (check == 0xFF)
   {
     mlx_event.spi++;
-    if (error_flag == 1)
-    {
-      printf("err:%d", error_flag);
-    }
 #if 0
     // while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
     // {
@@ -395,31 +388,22 @@ static void spi_process(void)
     //   Error_Handler();
     // }
 #endif
-    if (buffer_tag == BUFFER_A)
-    {
-      printf("cb_sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-             subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
-      __NOP();
-    }
-#if BUFFER_ENABLE == 1
-    else if (buffer_tag == BUFFER_B)
-    {
-      printf("cb_sub=[%d],BUFF_B=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-             subPage, mlx90640To[768], mlx90640To[768 + 127], mlx90640To[768 + 128], mlx90640To[768 + 256], mlx90640To[768 + 768 - 1]);
-      __NOP();
-    }
-#endif
+//     if (buffer_tag == BUFFER_A)
+//     {
+//       // printf("cb_sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+//       //        subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
+//       // __NOP();
+//     }
   }
   else
   {
-    mlx_event.err++;
-    printf("reserved\r\n");
-    // HAL_SPI_Abort_IT(TEST_SPI_ADDRESS);
+    mlx_event.frame_check_err++;
 #if DEBUG == 1
+    printf("reserved\r\n");
+#else
     Error_Handler();
 #endif
   }
-  error_flag = 0;
   // spi_state = osSemaphoreRelease(empty_idHandle);
   // if (spi_state != osOK)
   // {
