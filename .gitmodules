@@ -1,6 +1,3 @@
-[submodule "pio-stm32cube-package-creator"]
-	path = pio-stm32cube-package-creator
-	url = git@github.com:opo2000tw/pio-stm32cube-package-creator.git
 [submodule "f723/lib/MLX90640-With-STM32"]
 	path = f723/lib/MLX90640-With-STM32
 	url = https://github.com/opo2000tw/MLX90640-With-STM32
