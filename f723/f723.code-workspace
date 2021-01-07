@@ -8,7 +8,7 @@
     }
   ],
 	"settings": {
-		"python.pythonPath": "/usr/local/anaconda3/envs/platformio/bin/python"
+		"python.pythonPath": "pio_core/packages/tool-scons/scons.py"
 	},
 	"launch": {
 		"version": "0.2.0",
