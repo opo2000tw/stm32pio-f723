@@ -22,8 +22,6 @@
 
 /* USER CODE BEGIN 0 */
 /* Define application custom instance */
-lwprintf_t dbg_instance;
-lwprintf_t common_instance;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart4;
@@ -35,7 +33,6 @@ UART_HandleTypeDef huart6;
 /* UART4 init function */
 void MX_UART4_Init(void)
 {
-
   huart4.Instance = UART4;
   huart4.Init.BaudRate = 115200;
   huart4.Init.WordLength = UART_WORDLENGTH_8B;
@@ -392,7 +389,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 //   return ch;
 // }
 
-#if 0
+#if 1
 int _write(int fd, char *ptr, int len)
 {
   int i = 0;
@@ -408,10 +405,10 @@ int _write(int fd, char *ptr, int len)
   }
   while (*ptr && (i < len))
   {
-    HAL_UART_Transmit(&USARTx, (uint8_t *)ptr, sizeof(*ptr), 10);
+    HAL_UART_Transmit(USARTx, (uint8_t *)ptr, sizeof(*ptr), 100);
     if (*ptr == '\n')
     {
-      HAL_UART_Transmit(&USARTx, (uint8_t *)"\r", 2, 10);
+      HAL_UART_Transmit(USARTx, (uint8_t *)"\r", 2, 100);
     }
     i++;
     ptr++;
@@ -420,6 +417,7 @@ int _write(int fd, char *ptr, int len)
 }
 #endif
 
+#if 0
 /**
  * \brief           Output function to handle all characters for print operation
  * \param[in]       ch: Character to output
@@ -457,6 +455,7 @@ int lwprintf_my_out_func(int ch, lwprintf_t *p)
   }
   return ch;
 }
+#endif
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

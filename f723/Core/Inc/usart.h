@@ -28,7 +28,6 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "lwprintf.h"
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef huart4;
@@ -40,9 +39,6 @@ extern UART_HandleTypeDef huart6;
 /* USER CODE BEGIN Private defines */
 #define EOL "\r\n"
 #define USARTx &huart6
-#define printf lwprintf_printf
-extern lwprintf_t dbg_instance;
-extern lwprintf_t common_instance;
 /* USER CODE END Private defines */
 
 void MX_UART4_Init(void);
@@ -52,7 +48,6 @@ void MX_USART2_UART_Init(void);
 void MX_USART6_UART_Init(void);
 
 /* USER CODE BEGIN Prototypes */
-int lwprintf_my_out_func(int ch, lwprintf_t* p);
 /* USER CODE END Prototypes */
 
 #ifdef __cplusplus

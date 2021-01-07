@@ -46,6 +46,7 @@ EndDependencies */
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f723e_discovery.h"
+#include "fonts.h"
 
 /** @addtogroup BSP
   * @{
@@ -66,7 +67,7 @@ typedef struct
 {
   __IO uint16_t REG;
   __IO uint16_t RAM;
-} LCD_CONTROLLER_TypeDef;
+}LCD_CONTROLLER_TypeDef;
 /**
   * @}
   */
@@ -104,24 +105,22 @@ typedef struct
   * @{
   */
 uint32_t GPIO_PIN[LEDn] = {LED5_PIN,
-                           LED6_PIN
-                          };
+                           LED6_PIN};
 
-GPIO_TypeDef *GPIO_PORT[LEDn] = {LED5_GPIO_PORT,
-                                 LED6_GPIO_PORT
-                                };
+GPIO_TypeDef* GPIO_PORT[LEDn] = {LED5_GPIO_PORT,
+                                 LED6_GPIO_PORT};
 
-GPIO_TypeDef *BUTTON_PORT[BUTTONn] = {WAKEUP_BUTTON_GPIO_PORT };
+GPIO_TypeDef* BUTTON_PORT[BUTTONn] = {WAKEUP_BUTTON_GPIO_PORT };
 
 const uint16_t BUTTON_PIN[BUTTONn] = {WAKEUP_BUTTON_PIN };
 
 const uint16_t BUTTON_IRQn[BUTTONn] = {WAKEUP_BUTTON_EXTI_IRQn };
 
-USART_TypeDef *COM_USART[COMn] = {DISCOVERY_COM1};
+USART_TypeDef* COM_USART[COMn] = {DISCOVERY_COM1};
 
-GPIO_TypeDef *COM_TX_PORT[COMn] = {DISCOVERY_COM1_TX_GPIO_PORT};
+GPIO_TypeDef* COM_TX_PORT[COMn] = {DISCOVERY_COM1_TX_GPIO_PORT};
 
-GPIO_TypeDef *COM_RX_PORT[COMn] = {DISCOVERY_COM1_RX_GPIO_PORT};
+GPIO_TypeDef* COM_RX_PORT[COMn] = {DISCOVERY_COM1_RX_GPIO_PORT};
 
 const uint16_t COM_TX_PIN[COMn] = {DISCOVERY_COM1_TX_PIN};
 
@@ -185,10 +184,10 @@ void            TS_IO_Delay(uint32_t Delay);
   * @{
   */
 
-/**
-* @brief  This method returns the STM32F723E Discovery BSP Driver revision
-* @retval version: 0xXYZR (8bits for each decimal, R for RC)
-*/
+  /**
+  * @brief  This method returns the STM32F723E Discovery BSP Driver revision
+  * @retval version: 0xXYZR (8bits for each decimal, R for RC)
+  */
 uint32_t BSP_GetVersion(void)
 {
   return __STM32F723E_DISCOVERY_BSP_VERSION;
@@ -298,7 +297,7 @@ void BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode)
   /* Enable the BUTTON clock */
   BUTTON_GPIO_CLK_ENABLE();
 
-  if (Button_Mode == BUTTON_MODE_GPIO)
+  if(Button_Mode == BUTTON_MODE_GPIO)
   {
     /* Configure Button pin as input */
     gpio_init_structure.Pin = BUTTON_PIN[Button];
@@ -308,7 +307,7 @@ void BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode)
     HAL_GPIO_Init(BUTTON_PORT[Button], &gpio_init_structure);
   }
 
-  if (Button_Mode == BUTTON_MODE_EXTI)
+  if(Button_Mode == BUTTON_MODE_EXTI)
   {
     /* Configure Button pin as input with External interrupt */
     gpio_init_structure.Pin = BUTTON_PIN[Button];
@@ -336,11 +335,11 @@ void BSP_PB_Init(Button_TypeDef Button, ButtonMode_TypeDef Button_Mode)
   */
 void BSP_PB_DeInit(Button_TypeDef Button)
 {
-  GPIO_InitTypeDef gpio_init_structure;
+    GPIO_InitTypeDef gpio_init_structure;
 
-  gpio_init_structure.Pin = BUTTON_PIN[Button];
-  HAL_NVIC_DisableIRQ((IRQn_Type)(BUTTON_IRQn[Button]));
-  HAL_GPIO_DeInit(BUTTON_PORT[Button], gpio_init_structure.Pin);
+    gpio_init_structure.Pin = BUTTON_PIN[Button];
+    HAL_NVIC_DisableIRQ((IRQn_Type)(BUTTON_IRQn[Button]));
+    HAL_GPIO_DeInit(BUTTON_PORT[Button], gpio_init_structure.Pin);
 }
 
 
@@ -443,117 +442,117 @@ static void I2Cx_MspInit(I2C_HandleTypeDef *i2c_handler)
 {
   GPIO_InitTypeDef  gpio_init_structure;
 
-  if (i2c_handler == (I2C_HandleTypeDef *)(&hI2cAudioHandler))
+  if (i2c_handler == (I2C_HandleTypeDef*)(&hI2cAudioHandler))
   {
-    /*** Configure the GPIOs ***/
-    /* Enable GPIO clock */
-    DISCOVERY_AUDIO_I2Cx_SCL_GPIO_CLK_ENABLE();
-    DISCOVERY_AUDIO_I2Cx_SDA_GPIO_CLK_ENABLE();
-    /* Configure I2C Tx as alternate function */
-    gpio_init_structure.Pin = DISCOVERY_AUDIO_I2Cx_SCL_PIN;
-    gpio_init_structure.Mode = GPIO_MODE_AF_OD;
-    gpio_init_structure.Pull = GPIO_NOPULL;
-    gpio_init_structure.Speed = GPIO_SPEED_FAST;
-    gpio_init_structure.Alternate = DISCOVERY_AUDIO_I2Cx_SCL_AF;
-    HAL_GPIO_Init(DISCOVERY_AUDIO_I2Cx_SCL_GPIO_PORT, &gpio_init_structure);
+  /*** Configure the GPIOs ***/
+  /* Enable GPIO clock */
+  DISCOVERY_AUDIO_I2Cx_SCL_GPIO_CLK_ENABLE();
+  DISCOVERY_AUDIO_I2Cx_SDA_GPIO_CLK_ENABLE();
+  /* Configure I2C Tx as alternate function */
+  gpio_init_structure.Pin = DISCOVERY_AUDIO_I2Cx_SCL_PIN;
+  gpio_init_structure.Mode = GPIO_MODE_AF_OD;
+  gpio_init_structure.Pull = GPIO_NOPULL;
+  gpio_init_structure.Speed = GPIO_SPEED_FAST;
+  gpio_init_structure.Alternate = DISCOVERY_AUDIO_I2Cx_SCL_AF;
+  HAL_GPIO_Init(DISCOVERY_AUDIO_I2Cx_SCL_GPIO_PORT, &gpio_init_structure);
 
-    /* Configure I2C Rx as alternate function */
-    gpio_init_structure.Pin = DISCOVERY_AUDIO_I2Cx_SDA_PIN;
-    gpio_init_structure.Alternate = DISCOVERY_AUDIO_I2Cx_SDA_AF;
-    HAL_GPIO_Init(DISCOVERY_AUDIO_I2Cx_SDA_GPIO_PORT, &gpio_init_structure);
+  /* Configure I2C Rx as alternate function */
+  gpio_init_structure.Pin = DISCOVERY_AUDIO_I2Cx_SDA_PIN;
+  gpio_init_structure.Alternate = DISCOVERY_AUDIO_I2Cx_SDA_AF;
+  HAL_GPIO_Init(DISCOVERY_AUDIO_I2Cx_SDA_GPIO_PORT, &gpio_init_structure);
 
-    /*** Configure the I2C peripheral ***/
-    /* Enable I2C clock */
-    DISCOVERY_AUDIO_I2Cx_CLK_ENABLE();
+  /*** Configure the I2C peripheral ***/
+  /* Enable I2C clock */
+  DISCOVERY_AUDIO_I2Cx_CLK_ENABLE();
 
-    /* Force the I2C peripheral clock reset */
-    DISCOVERY_AUDIO_I2Cx_FORCE_RESET();
+  /* Force the I2C peripheral clock reset */
+  DISCOVERY_AUDIO_I2Cx_FORCE_RESET();
 
-    /* Release the I2C peripheral clock reset */
-    DISCOVERY_AUDIO_I2Cx_RELEASE_RESET();
+  /* Release the I2C peripheral clock reset */
+  DISCOVERY_AUDIO_I2Cx_RELEASE_RESET();
 
-    /* Enable and set I2C1 Interrupt to a lower priority */
-    HAL_NVIC_SetPriority(DISCOVERY_AUDIO_I2Cx_EV_IRQn, 0x0F, 0);
-    HAL_NVIC_EnableIRQ(DISCOVERY_AUDIO_I2Cx_EV_IRQn);
+  /* Enable and set I2C1 Interrupt to a lower priority */
+  HAL_NVIC_SetPriority(DISCOVERY_AUDIO_I2Cx_EV_IRQn, 0x0F, 0);
+  HAL_NVIC_EnableIRQ(DISCOVERY_AUDIO_I2Cx_EV_IRQn);
 
-    /* Enable and set I2C1 Interrupt to a lower priority */
-    HAL_NVIC_SetPriority(DISCOVERY_AUDIO_I2Cx_ER_IRQn, 0x0F, 0);
-    HAL_NVIC_EnableIRQ(DISCOVERY_AUDIO_I2Cx_ER_IRQn);
+  /* Enable and set I2C1 Interrupt to a lower priority */
+  HAL_NVIC_SetPriority(DISCOVERY_AUDIO_I2Cx_ER_IRQn, 0x0F, 0);
+  HAL_NVIC_EnableIRQ(DISCOVERY_AUDIO_I2Cx_ER_IRQn);
 
   }
-  else if (i2c_handler == (I2C_HandleTypeDef *)(&hI2cTsHandler))
+  else if (i2c_handler == (I2C_HandleTypeDef*)(&hI2cTsHandler))
   {
-    /*** Configure the GPIOs ***/
-    /* Enable GPIO clock */
-    TS_I2Cx_SCL_GPIO_CLK_ENABLE();
-    TS_I2Cx_SDA_GPIO_CLK_ENABLE();
-    /* Configure I2C SCL as alternate function */
-    gpio_init_structure.Pin = TS_I2Cx_SCL_PIN;
-    gpio_init_structure.Mode = GPIO_MODE_AF_OD;
-    gpio_init_structure.Pull = GPIO_NOPULL;
-    gpio_init_structure.Speed = GPIO_SPEED_FREQ_HIGH;
-    gpio_init_structure.Alternate = TS_I2Cx_SCL_AF;
-    HAL_GPIO_Init(TS_I2Cx_SCL_GPIO_PORT, &gpio_init_structure);
+  /*** Configure the GPIOs ***/
+  /* Enable GPIO clock */
+  TS_I2Cx_SCL_GPIO_CLK_ENABLE();
+  TS_I2Cx_SDA_GPIO_CLK_ENABLE();
+  /* Configure I2C SCL as alternate function */
+  gpio_init_structure.Pin = TS_I2Cx_SCL_PIN;
+  gpio_init_structure.Mode = GPIO_MODE_AF_OD;
+  gpio_init_structure.Pull = GPIO_NOPULL;
+  gpio_init_structure.Speed = GPIO_SPEED_FREQ_HIGH;
+  gpio_init_structure.Alternate = TS_I2Cx_SCL_AF;
+  HAL_GPIO_Init(TS_I2Cx_SCL_GPIO_PORT, &gpio_init_structure);
 
-    /* Configure I2C SDA as alternate function */
-    gpio_init_structure.Pin = TS_I2Cx_SDA_PIN;
-    gpio_init_structure.Alternate = TS_I2Cx_SDA_AF;
-    HAL_GPIO_Init(TS_I2Cx_SDA_GPIO_PORT, &gpio_init_structure);
+  /* Configure I2C SDA as alternate function */
+  gpio_init_structure.Pin = TS_I2Cx_SDA_PIN;
+  gpio_init_structure.Alternate = TS_I2Cx_SDA_AF;
+  HAL_GPIO_Init(TS_I2Cx_SDA_GPIO_PORT, &gpio_init_structure);
 
-    /*** Configure the I2C peripheral ***/
-    /* Enable I2C clock */
-    TS_I2Cx_CLK_ENABLE();
+  /*** Configure the I2C peripheral ***/
+  /* Enable I2C clock */
+  TS_I2Cx_CLK_ENABLE();
 
-    /* Force the I2C peripheral clock reset */
-    TS_I2Cx_FORCE_RESET();
+  /* Force the I2C peripheral clock reset */
+  TS_I2Cx_FORCE_RESET();
 
-    /* Release the I2C peripheral clock reset */
-    TS_I2Cx_RELEASE_RESET();
+  /* Release the I2C peripheral clock reset */
+  TS_I2Cx_RELEASE_RESET();
 
-    /* Enable and set I2C Interrupt to a lower priority */
-    HAL_NVIC_SetPriority(TS_I2Cx_EV_IRQn, 0x0F, 0);
-    HAL_NVIC_EnableIRQ(TS_I2Cx_EV_IRQn);
+  /* Enable and set I2C Interrupt to a lower priority */
+  HAL_NVIC_SetPriority(TS_I2Cx_EV_IRQn, 0x0F, 0);
+  HAL_NVIC_EnableIRQ(TS_I2Cx_EV_IRQn);
 
-    /* Enable and set I2C Interrupt to a lower priority */
-    HAL_NVIC_SetPriority(TS_I2Cx_ER_IRQn, 0x0F, 0);
-    HAL_NVIC_EnableIRQ(TS_I2Cx_ER_IRQn);
+  /* Enable and set I2C Interrupt to a lower priority */
+  HAL_NVIC_SetPriority(TS_I2Cx_ER_IRQn, 0x0F, 0);
+  HAL_NVIC_EnableIRQ(TS_I2Cx_ER_IRQn);
 
   }
   else
   {
-    /*** Configure the GPIOs ***/
-    /* Enable GPIO clock */
-    DISCOVERY_EXT_I2Cx_SCL_SDA_GPIO_CLK_ENABLE();
+  /*** Configure the GPIOs ***/
+  /* Enable GPIO clock */
+  DISCOVERY_EXT_I2Cx_SCL_SDA_GPIO_CLK_ENABLE();
 
-    /* Configure I2C Tx as alternate function */
-    gpio_init_structure.Pin = DISCOVERY_EXT_I2Cx_SCL_PIN;
-    gpio_init_structure.Mode = GPIO_MODE_AF_OD;
-    gpio_init_structure.Pull = GPIO_NOPULL;
-    gpio_init_structure.Speed = GPIO_SPEED_FAST;
-    gpio_init_structure.Alternate = DISCOVERY_EXT_I2Cx_SCL_SDA_AF;
-    HAL_GPIO_Init(DISCOVERY_EXT_I2Cx_SCL_SDA_GPIO_PORT, &gpio_init_structure);
+  /* Configure I2C Tx as alternate function */
+  gpio_init_structure.Pin = DISCOVERY_EXT_I2Cx_SCL_PIN;
+  gpio_init_structure.Mode = GPIO_MODE_AF_OD;
+  gpio_init_structure.Pull = GPIO_NOPULL;
+  gpio_init_structure.Speed = GPIO_SPEED_FAST;
+  gpio_init_structure.Alternate = DISCOVERY_EXT_I2Cx_SCL_SDA_AF;
+  HAL_GPIO_Init(DISCOVERY_EXT_I2Cx_SCL_SDA_GPIO_PORT, &gpio_init_structure);
 
-    /* Configure I2C Rx as alternate function */
-    gpio_init_structure.Pin = DISCOVERY_EXT_I2Cx_SDA_PIN;
-    HAL_GPIO_Init(DISCOVERY_EXT_I2Cx_SCL_SDA_GPIO_PORT, &gpio_init_structure);
+  /* Configure I2C Rx as alternate function */
+  gpio_init_structure.Pin = DISCOVERY_EXT_I2Cx_SDA_PIN;
+  HAL_GPIO_Init(DISCOVERY_EXT_I2Cx_SCL_SDA_GPIO_PORT, &gpio_init_structure);
 
-    /*** Configure the I2C peripheral ***/
-    /* Enable I2C clock */
-    DISCOVERY_EXT_I2Cx_CLK_ENABLE();
+  /*** Configure the I2C peripheral ***/
+  /* Enable I2C clock */
+  DISCOVERY_EXT_I2Cx_CLK_ENABLE();
 
-    /* Force the I2C peripheral clock reset */
-    DISCOVERY_EXT_I2Cx_FORCE_RESET();
+  /* Force the I2C peripheral clock reset */
+  DISCOVERY_EXT_I2Cx_FORCE_RESET();
 
-    /* Release the I2C peripheral clock reset */
-    DISCOVERY_EXT_I2Cx_RELEASE_RESET();
+  /* Release the I2C peripheral clock reset */
+  DISCOVERY_EXT_I2Cx_RELEASE_RESET();
 
-    /* Enable and set I2C1 Interrupt to a lower priority */
-    HAL_NVIC_SetPriority(DISCOVERY_EXT_I2Cx_EV_IRQn, 0x0F, 0);
-    HAL_NVIC_EnableIRQ(DISCOVERY_EXT_I2Cx_EV_IRQn);
+  /* Enable and set I2C1 Interrupt to a lower priority */
+  HAL_NVIC_SetPriority(DISCOVERY_EXT_I2Cx_EV_IRQn, 0x0F, 0);
+  HAL_NVIC_EnableIRQ(DISCOVERY_EXT_I2Cx_EV_IRQn);
 
-    /* Enable and set I2C1 Interrupt to a lower priority */
-    HAL_NVIC_SetPriority(DISCOVERY_EXT_I2Cx_ER_IRQn, 0x0F, 0);
-    HAL_NVIC_EnableIRQ(DISCOVERY_EXT_I2Cx_ER_IRQn);
+  /* Enable and set I2C1 Interrupt to a lower priority */
+  HAL_NVIC_SetPriority(DISCOVERY_EXT_I2Cx_ER_IRQn, 0x0F, 0);
+  HAL_NVIC_EnableIRQ(DISCOVERY_EXT_I2Cx_ER_IRQn);
   }
 }
 
@@ -564,14 +563,14 @@ static void I2Cx_MspInit(I2C_HandleTypeDef *i2c_handler)
   */
 static void I2Cx_Init(I2C_HandleTypeDef *i2c_handler)
 {
-  if (HAL_I2C_GetState(i2c_handler) == HAL_I2C_STATE_RESET)
+  if(HAL_I2C_GetState(i2c_handler) == HAL_I2C_STATE_RESET)
   {
-    if (i2c_handler == (I2C_HandleTypeDef *)(&hI2cAudioHandler))
+    if (i2c_handler == (I2C_HandleTypeDef*)(&hI2cAudioHandler))
     {
       /* Audio and LCD I2C configuration */
       i2c_handler->Instance = DISCOVERY_AUDIO_I2Cx;
     }
-    else if (i2c_handler == (I2C_HandleTypeDef *)(&hI2cTsHandler))
+    else if (i2c_handler == (I2C_HandleTypeDef*)(&hI2cTsHandler))
     {
       /* TouchScreen I2C configuration */
       i2c_handler->Instance = TS_I2Cx;
@@ -612,7 +611,7 @@ static HAL_StatusTypeDef I2Cx_ReadMultiple(I2C_HandleTypeDef *i2c_handler, uint8
   status = HAL_I2C_Mem_Read(i2c_handler, Addr, (uint16_t)Reg, MemAddress, Buffer, Length, 1000);
 
   /* Check the communication status */
-  if (status != HAL_OK)
+  if(status != HAL_OK)
   {
     /* I2C error occured */
     I2Cx_Error(i2c_handler, Addr);
@@ -638,7 +637,7 @@ static HAL_StatusTypeDef I2Cx_WriteMultiple(I2C_HandleTypeDef *i2c_handler, uint
   status = HAL_I2C_Mem_Write(i2c_handler, Addr, (uint16_t)Reg, MemAddress, Buffer, Length, 1000);
 
   /* Check the communication status */
-  if (status != HAL_OK)
+  if(status != HAL_OK)
   {
     /* Re-Initiaize the I2C Bus */
     I2Cx_Error(i2c_handler, Addr);
@@ -701,27 +700,27 @@ static void FMC_BANK2_MspInit(void)
   /* GPIOD configuration */
   /* LCD_PSRAM_D2, LCD_PSRAM_D3, LCD_PSRAM_NOE, LCD_PSRAM_NWE, PSRAM_NE1, LCD_PSRAM_D13,
      LCD_PSRAM_D14, LCD_PSRAM_D15, PSRAM_A16, PSRAM_A17, LCD_PSRAM_D0, LCD_PSRAM_D1 */
-  gpio_init_structure.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5  | GPIO_PIN_7 | GPIO_PIN_8 | \
+  gpio_init_structure.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5  | GPIO_PIN_7 | GPIO_PIN_8 |\
                               GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_14 | GPIO_PIN_15;
   HAL_GPIO_Init(GPIOD, &gpio_init_structure);
 
   /* GPIOE configuration */
   /* PSRAM_NBL0, PSRAM_NBL1, LCD_PSRAM_D4, LCD_PSRAM_D5, LCD_PSRAM_D6, LCD_PSRAM_D7,
      LCD_PSRAM_D8, LCD_PSRAM_D9, LCD_PSRAM_D10, LCD_PSRAM_D11, LCD_PSRAM_D12 */
-  gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | \
-                             GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+  gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 |GPIO_PIN_10 |\
+                             GPIO_PIN_11 | GPIO_PIN_12 |GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
   HAL_GPIO_Init(GPIOE, &gpio_init_structure);
 
   /* GPIOF configuration */
   /* PSRAM_A0, PSRAM_A1, PSRAM_A2, PSRAM_A3, PSRAM_A4, PSRAM_A5,
      PSRAM_A6, PSRAM_A7, PSRAM_A8, PSRAM_A9 */
-  gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | \
+  gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 |\
                              GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
   HAL_GPIO_Init(GPIOF, &gpio_init_structure);
 
   /* GPIOG configuration */
   /* PSRAM_A10, PSRAM_A11, PSRAM_A12, PSRAM_A13, PSRAM_A14, PSRAM_A15, LCD_NE */
-  gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | \
+  gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 |\
                              GPIO_PIN_9 ;
   HAL_GPIO_Init(GPIOG, &gpio_init_structure);
 }
@@ -914,9 +913,9 @@ void AUDIO_IO_Write(uint8_t Addr, uint16_t Reg, uint16_t Value)
 
   Value = ((uint16_t)(tmp >> 8) & 0x00FF);
 
-  Value |= ((uint16_t)(tmp << 8) & 0xFF00);
+  Value |= ((uint16_t)(tmp << 8)& 0xFF00);
 
-  I2Cx_WriteMultiple(&hI2cAudioHandler, Addr, Reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)&Value, 2);
+  I2Cx_WriteMultiple(&hI2cAudioHandler, Addr, Reg, I2C_MEMADD_SIZE_16BIT,(uint8_t*)&Value, 2);
 }
 
 /**
@@ -929,11 +928,11 @@ uint16_t AUDIO_IO_Read(uint8_t Addr, uint16_t Reg)
 {
   uint16_t read_value = 0, tmp = 0;
 
-  I2Cx_ReadMultiple(&hI2cAudioHandler, Addr, Reg, I2C_MEMADD_SIZE_16BIT, (uint8_t *)&read_value, 2);
+  I2Cx_ReadMultiple(&hI2cAudioHandler, Addr, Reg, I2C_MEMADD_SIZE_16BIT, (uint8_t*)&read_value, 2);
 
   tmp = ((uint16_t)(read_value >> 8) & 0x00FF);
 
-  tmp |= ((uint16_t)(read_value << 8) & 0xFF00);
+  tmp |= ((uint16_t)(read_value << 8)& 0xFF00);
 
   read_value = tmp;
 
@@ -980,7 +979,7 @@ void TS_IO_Init(void)
   */
 void TS_IO_Write(uint8_t Addr, uint8_t Reg, uint8_t Value)
 {
-  I2Cx_WriteMultiple(&hI2cTsHandler, Addr, (uint16_t)Reg, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&Value, 1);
+  I2Cx_WriteMultiple(&hI2cTsHandler, Addr, (uint16_t)Reg, I2C_MEMADD_SIZE_8BIT,(uint8_t*)&Value, 1);
 }
 
 /**
@@ -993,7 +992,7 @@ uint8_t TS_IO_Read(uint8_t Addr, uint8_t Reg)
 {
   uint8_t read_value = 0;
 
-  I2Cx_ReadMultiple(&hI2cTsHandler, Addr, Reg, I2C_MEMADD_SIZE_8BIT, (uint8_t *)&read_value, 1);
+  I2Cx_ReadMultiple(&hI2cTsHandler, Addr, Reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*)&read_value, 1);
 
   return read_value;
 }
@@ -1009,7 +1008,7 @@ uint8_t TS_IO_Read(uint8_t Addr, uint8_t Reg)
   */
 uint16_t TS_IO_ReadMultiple(uint8_t Addr, uint8_t Reg, uint8_t *Buffer, uint16_t Length)
 {
-  return I2Cx_ReadMultiple(&hI2cTsHandler, Addr, (uint16_t)Reg, I2C_MEMADD_SIZE_8BIT, Buffer, Length);
+ return I2Cx_ReadMultiple(&hI2cTsHandler, Addr, (uint16_t)Reg, I2C_MEMADD_SIZE_8BIT, Buffer, Length);
 }
 
 /**

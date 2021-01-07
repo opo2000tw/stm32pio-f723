@@ -31,7 +31,7 @@
 #include "stm32f723e_discovery.h"
 #include "MLX90640_I2C_Driver.h"
 #include "MLX90640_API.h"
-#include "lwprintf.h"
+#include "usart.h"
 #include "cpu_utils.h"
 #include "spi.h"
 /* USER CODE END Includes */
@@ -70,54 +70,46 @@ uint8_t aTxBuffer[DMA_U8_OUTPUT_SIZE]__attribute__((aligned (4))) = {0};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes =
-{
+const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTask02 */
 osThreadId_t myTask02Handle;
-const osThreadAttr_t myTask02_attributes =
-{
+const osThreadAttr_t myTask02_attributes = {
   .name = "myTask02",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
 /* Definitions for myTimer01 */
 osTimerId_t myTimer01Handle;
-const osTimerAttr_t myTimer01_attributes =
-{
+const osTimerAttr_t myTimer01_attributes = {
   .name = "myTimer01"
 };
 /* Definitions for myTimer02 */
 osTimerId_t myTimer02Handle;
-const osTimerAttr_t myTimer02_attributes =
-{
+const osTimerAttr_t myTimer02_attributes = {
   .name = "myTimer02"
 };
 /* Definitions for empty_id */
 osSemaphoreId_t empty_idHandle;
-const osSemaphoreAttr_t empty_id_attributes =
-{
+const osSemaphoreAttr_t empty_id_attributes = {
   .name = "empty_id"
 };
 /* Definitions for filled_id */
 osSemaphoreId_t filled_idHandle;
-const osSemaphoreAttr_t filled_id_attributes =
-{
+const osSemaphoreAttr_t filled_id_attributes = {
   .name = "filled_id"
 };
 /* Definitions for ThermalEvent */
 osEventFlagsId_t ThermalEventHandle;
-const osEventFlagsAttr_t ThermalEvent_attributes =
-{
+const osEventFlagsAttr_t ThermalEvent_attributes = {
   .name = "ThermalEvent"
 };
 /* Definitions for Thermal1sEvent */
 osEventFlagsId_t Thermal1sEventHandle;
-const osEventFlagsAttr_t Thermal1sEvent_attributes =
-{
+const osEventFlagsAttr_t Thermal1sEvent_attributes = {
   .name = "Thermal1sEvent"
 };
 
@@ -168,8 +160,7 @@ void vApplicationDaemonTaskStartupHook(void)
   * @param  None
   * @retval None
   */
-void MX_FREERTOS_Init(void)
-{
+void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
   HAL_SPIEx_FlushRxFifo(TEST_SPI_ADDRESS);
   /* USER CODE END Init */
