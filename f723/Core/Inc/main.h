@@ -29,11 +29,12 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stm32f7xx_hal_def.h"
+#include <stdbool.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -83,8 +84,6 @@ void Error_Handler(void);
 #define PSRAM_NE1_GPIO_Port GPIOD
 #define UART_TXD_WIFI_RX_Pin GPIO_PIN_12
 #define UART_TXD_WIFI_RX_GPIO_Port GPIOC
-#define STMOD__TIM2_CH1_2_ETR_Pin GPIO_PIN_15
-#define STMOD__TIM2_CH1_2_ETR_GPIO_Port GPIOA
 #define ARD_D8_GPIO_Pin GPIO_PIN_4
 #define ARD_D8_GPIO_GPIO_Port GPIOE
 #define ARD_D3_TIM9_CH1_Pin GPIO_PIN_5
@@ -229,8 +228,8 @@ void Error_Handler(void);
 #define LCD_PSRAM_D0_GPIO_Port GPIOD
 #define QSPI_D3_Pin GPIO_PIN_13
 #define QSPI_D3_GPIO_Port GPIOD
-#define ARD_D10_TIM2_CH2_SPI1_NSS_Pin GPIO_PIN_1
-#define ARD_D10_TIM2_CH2_SPI1_NSS_GPIO_Port GPIOA
+#define SPI1_NSS_SOFT_Pin GPIO_PIN_1
+#define SPI1_NSS_SOFT_GPIO_Port GPIOA
 #define SYS_B_User_Pin GPIO_PIN_0
 #define SYS_B_User_GPIO_Port GPIOA
 #define ARD_A1_Pin GPIO_PIN_4

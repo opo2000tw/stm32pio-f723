@@ -4,6 +4,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
+#include "dma.h"
 #include "i2c.h"
 #include "quadspi.h"
 #include "sai.h"
@@ -16,8 +17,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lwprintf.h"
 #include "stm32f723e_discovery.h"
+#include "stm32f723e_discovery_lcd.h"
+#include "MLX90640_I2C_Driver.h"
+#include "MLX90640_API.h"
+#include <stdbool.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,6 +45,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void MX_FREERTOS_Init(void);
+static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
@@ -55,7 +61,6 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   /* Initialize library */
-  lwprintf_init(lwprintf_my_out_func);
   /* USER CODE END 1 */
 
   /* Enable I-Cache---------------------------------------------------------*/
@@ -80,6 +85,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
   MX_ADC3_Init();
@@ -91,7 +97,6 @@ int main(void)
   MX_SAI2_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
-  MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM5_Init();
   MX_TIM9_Init();
@@ -101,7 +106,33 @@ int main(void)
   MX_UART7_Init();
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
+  MX_TIM4_Init();
+
+  /* Initialize interrupts */
+  MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+  MPU_ConfigPSRAM();
+  if (BSP_LCD_Init() != LCD_OK)
+  {
+    printf("BSP_LCD_Init fail");
+  }
+  else
+  {
+    printf("BSP_LCD_Init");
+  }
+  while (1)
+  {
+#if 0
+    LCD_demo();
+    HAL_Delay(10000);
+#else
+  testQQ();
+#endif
+  }
+  if (MLX90640_I2CCheck() != true)
+  {
+    Error_Handler();
+  }
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -113,9 +144,12 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  while (1)
+  {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+  }
   /* USER CODE END 3 */
 }
 
@@ -159,8 +193,8 @@ void SystemClock_Config(void)
   }
   /** Initializes the CPU, AHB and APB buses clocks
   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -170,11 +204,11 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_USART6
-                              |RCC_PERIPHCLK_UART4|RCC_PERIPHCLK_UART5
-                              |RCC_PERIPHCLK_UART7|RCC_PERIPHCLK_SAI2
-                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_I2C2
-                              |RCC_PERIPHCLK_I2C3|RCC_PERIPHCLK_CLK48;
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART2 | RCC_PERIPHCLK_USART6
+      | RCC_PERIPHCLK_UART4 | RCC_PERIPHCLK_UART5
+      | RCC_PERIPHCLK_UART7 | RCC_PERIPHCLK_SAI2
+      | RCC_PERIPHCLK_I2C1 | RCC_PERIPHCLK_I2C2
+      | RCC_PERIPHCLK_I2C3 | RCC_PERIPHCLK_CLK48;
   PeriphClkInitStruct.PLLSAI.PLLSAIN = 192;
   PeriphClkInitStruct.PLLSAI.PLLSAIQ = 2;
   PeriphClkInitStruct.PLLSAI.PLLSAIP = RCC_PLLSAIP_DIV2;
@@ -195,25 +229,47 @@ void SystemClock_Config(void)
   }
 }
 
+/**
+  * @brief NVIC Configuration.
+  * @retval None
+  */
+static void MX_NVIC_Init(void)
+{
+  /* DMA2_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+  /* DMA2_Stream3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream3_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+  /* OTG_FS_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(OTG_FS_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+  /* OTG_HS_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(OTG_HS_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
+}
+
 /* USER CODE BEGIN 4 */
 /* USER CODE END 4 */
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM1 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM1 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
   /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM1) {
+  if (htim->Instance == TIM1)
+  {
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+
   /* USER CODE END Callback 1 */
 }
 
@@ -224,10 +280,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-    while(1)
+  __NOP(); //
+  BSP_LED_Toggle(LED_RED);
+  while (1)
   {
-    BSP_LED_Toggle(LED6);
-    HAL_Delay(1000);
+    NVIC_SystemReset();
   }
   /* USER CODE END Error_Handler_Debug */
 }
@@ -243,9 +300,10 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
+  BSP_LED_Toggle(LED_RED);
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  printf("Wrong parameters value: file %s on line %d\r\n", file, line);
+  printf("Wrong parameters value: file %s on line %ld\r\n", file, line);
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

@@ -4,7 +4,8 @@
 .vscode/launch.json
 .vscode/ipch
 
-pio_*
+pio_work/*
+
 # libdeps
 build
 GPATH
@@ -13,3 +14,49 @@ GTAGS
 Middlewares
 Drivers
 USB_HOST
+
+# ├──MLX90640-With-STM32
+# │  ├── LICENSE
+# │  ├── README.md
+# │  ├── inc
+# │  ├── library.json
+# │  └── src
+# ├──Middlewares
+# │  ├── ST
+# │  ├── Third_Party
+# │  ├── inc
+# │  ├── library.json
+# │  └── src
+# ├──README
+# ├──USB_HOST
+# │  ├── App
+# │  ├── Target
+# │  ├── inc
+# │  ├── library.json
+# │  └── src
+# ├──library.json
+# ├──lwprintf
+# │  ├── LICENSE
+# │  ├── README.md
+# │  ├── inc
+# │  ├── library.json
+# │  └── src
+# └──recursive_copy.py
+# 
+Third_Party
+ST
+App
+Target
+
+!pio_core/
+pio_core/*
+!pio_core/packages/
+pio_core/packages/*
+!pio_core/packages/framework-stm32cubef7/
+pio_core/packages/framework-stm32cubef7/*
+!pio_core/packages/framework-stm32cubef7/Drivers
+!pio_core/packages/framework-stm32cubef7/Middlewares
+# !pio_core/packages/framework-stm32cubef7/Utilities
+pio_core/packages/framework-stm32cubef7/Drivers/*
+# !pio_core/packages/framework-stm32cubef7/Drivers/CMSIS
+!pio_core/packages/framework-stm32cubef7/Drivers/STM32F7xx_HAL_Driver

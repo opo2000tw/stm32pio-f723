@@ -3,12 +3,12 @@
   * @file    stm32f723e_discovery.c
   * @author  MCD Application Team
   * @brief   This file provides a set of firmware functions to manage LEDs,
-  *          push-buttons, external PSRAM, external QSPI Flash, TS available on 
+  *          push-buttons, external PSRAM, external QSPI Flash, TS available on
   *          STM32F723E-Discovery board (MB1260) from STMicroelectronics.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>        
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -46,6 +46,7 @@ EndDependencies */
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f723e_discovery.h"
+#include "fonts.h"
 
 /** @addtogroup BSP
   * @{
@@ -87,7 +88,7 @@ typedef struct
                                                  |(__STM32F723E_DISCOVERY_BSP_VERSION_RC))
 
 /* We use BANK2 as we use FMC_NE2 signal */
-#define FMC_BANK2_BASE  ((uint32_t)(0x60000000 | 0x04000000))  
+#define FMC_BANK2_BASE  ((uint32_t)(0x60000000 | 0x04000000))
 #define FMC_BANK2       ((LCD_CONTROLLER_TypeDef *) FMC_BANK2_BASE)
 /**
   * @}
@@ -203,14 +204,14 @@ uint32_t BSP_GetVersion(void)
 void BSP_LED_Init(Led_TypeDef Led)
 {
   GPIO_InitTypeDef  gpio_init_structure;
-  
+
   LEDx_GPIO_CLK_ENABLE(Led);
   /* Configure the GPIO_LED pin */
   gpio_init_structure.Pin   = GPIO_PIN[Led];
   gpio_init_structure.Mode  = GPIO_MODE_OUTPUT_PP;
   gpio_init_structure.Pull  = GPIO_PULLUP;
   gpio_init_structure.Speed = GPIO_SPEED_HIGH;
-  
+
   HAL_GPIO_Init(GPIO_PORT[Led], &gpio_init_structure);
 
 }
@@ -228,10 +229,10 @@ void BSP_LED_Init(Led_TypeDef Led)
 void BSP_LED_DeInit(Led_TypeDef Led)
 {
   GPIO_InitTypeDef  gpio_init_structure;
-  
+
   /* DeInit the GPIO_LED pin */
   gpio_init_structure.Pin = GPIO_PIN[Led];
-  
+
   /* Turn off LED */
   HAL_GPIO_WritePin(GPIO_PORT[Led], GPIO_PIN[Led], GPIO_PIN_RESET);
   HAL_GPIO_DeInit(GPIO_PORT[Led], gpio_init_structure.Pin);
@@ -366,7 +367,7 @@ uint32_t BSP_PB_GetState(Button_TypeDef Button)
   * @brief  Configures COM port.
   * @param  COM: COM port to be configured.
   *          This parameter can be one of the following values:
-  *            @arg  COM1 
+  *            @arg  COM1
   * @param  huart: Pointer to a UART_HandleTypeDef structure that contains the
   *                configuration information for the specified USART peripheral.
   * @retval None
@@ -405,8 +406,8 @@ void BSP_COM_Init(COM_TypeDef COM, UART_HandleTypeDef *huart)
   * @brief  DeInit COM port.
   * @param  COM: COM port to be configured.
   *          This parameter can be one of the following values:
-  *            @arg  COM1 
-  *            @arg  COM2 
+  *            @arg  COM1
+  *            @arg  COM2
   * @param  huart: Pointer to a UART_HandleTypeDef structure that contains the
   *                configuration information for the specified USART peripheral.
   * @retval None
@@ -420,11 +421,11 @@ void BSP_COM_DeInit(COM_TypeDef COM, UART_HandleTypeDef *huart)
   /* Enable USART clock */
   DISCOVERY_COMx_CLK_DISABLE(COM);
 
-  /* DeInit GPIO pins can be done in the application 
+  /* DeInit GPIO pins can be done in the application
      (by surcharging this __weak function) */
 
-  /* GPIO pins clock, FMC clock and DMA clock can be shut down in the application 
-     by surcharging this __weak function */ 
+  /* GPIO pins clock, FMC clock and DMA clock can be shut down in the application
+     by surcharging this __weak function */
 }
 
 /*******************************************************************************
@@ -476,8 +477,8 @@ static void I2Cx_MspInit(I2C_HandleTypeDef *i2c_handler)
 
   /* Enable and set I2C1 Interrupt to a lower priority */
   HAL_NVIC_SetPriority(DISCOVERY_AUDIO_I2Cx_ER_IRQn, 0x0F, 0);
-  HAL_NVIC_EnableIRQ(DISCOVERY_AUDIO_I2Cx_ER_IRQn);    
-    
+  HAL_NVIC_EnableIRQ(DISCOVERY_AUDIO_I2Cx_ER_IRQn);
+
   }
   else if (i2c_handler == (I2C_HandleTypeDef*)(&hI2cTsHandler))
   {
@@ -514,9 +515,9 @@ static void I2Cx_MspInit(I2C_HandleTypeDef *i2c_handler)
 
   /* Enable and set I2C Interrupt to a lower priority */
   HAL_NVIC_SetPriority(TS_I2Cx_ER_IRQn, 0x0F, 0);
-  HAL_NVIC_EnableIRQ(TS_I2Cx_ER_IRQn);    
-    
-  }  
+  HAL_NVIC_EnableIRQ(TS_I2Cx_ER_IRQn);
+
+  }
   else
   {
   /*** Configure the GPIOs ***/
@@ -573,7 +574,7 @@ static void I2Cx_Init(I2C_HandleTypeDef *i2c_handler)
     {
       /* TouchScreen I2C configuration */
       i2c_handler->Instance = TS_I2Cx;
-    }	    
+    }
     else
     {
       /* External, camera and Arduino connector  I2C configuration */
@@ -655,7 +656,7 @@ static void I2Cx_Error(I2C_HandleTypeDef *i2c_handler, uint8_t Addr)
 {
   /* De-initialize the I2C communication bus */
   HAL_I2C_DeInit(i2c_handler);
-  
+
   /* Re-Initialize the I2C communication bus */
   I2Cx_Init(i2c_handler);
 }
@@ -675,43 +676,43 @@ static void I2Cx_Error(I2C_HandleTypeDef *i2c_handler, uint8_t Addr)
 static void FMC_BANK2_MspInit(void)
 {
   GPIO_InitTypeDef gpio_init_structure;
-    
+
   /* Enable FMC clock */
   __HAL_RCC_FMC_CLK_ENABLE();
-    
+
   /* Enable FSMC clock */
   __HAL_RCC_FMC_CLK_ENABLE();
   __HAL_RCC_FMC_FORCE_RESET();
   __HAL_RCC_FMC_RELEASE_RESET();
-  
+
   /* Enable GPIOs clock */
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOG_CLK_ENABLE(); 
-  
+  __HAL_RCC_GPIOG_CLK_ENABLE();
+
   /* Common GPIO configuration */
   gpio_init_structure.Mode      = GPIO_MODE_AF_PP;
   gpio_init_structure.Pull      = GPIO_PULLUP;
   gpio_init_structure.Speed     = GPIO_SPEED_FREQ_VERY_HIGH;
   gpio_init_structure.Alternate = GPIO_AF12_FMC;
-  
-  /* GPIOD configuration */ 
-  /* LCD_PSRAM_D2, LCD_PSRAM_D3, LCD_PSRAM_NOE, LCD_PSRAM_NWE, PSRAM_NE1, LCD_PSRAM_D13, 
+
+  /* GPIOD configuration */
+  /* LCD_PSRAM_D2, LCD_PSRAM_D3, LCD_PSRAM_NOE, LCD_PSRAM_NWE, PSRAM_NE1, LCD_PSRAM_D13,
      LCD_PSRAM_D14, LCD_PSRAM_D15, PSRAM_A16, PSRAM_A17, LCD_PSRAM_D0, LCD_PSRAM_D1 */
   gpio_init_structure.Pin   = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5  | GPIO_PIN_7 | GPIO_PIN_8 |\
                               GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_14 | GPIO_PIN_15;
   HAL_GPIO_Init(GPIOD, &gpio_init_structure);
 
   /* GPIOE configuration */
-  /* PSRAM_NBL0, PSRAM_NBL1, LCD_PSRAM_D4, LCD_PSRAM_D5, LCD_PSRAM_D6, LCD_PSRAM_D7, 
+  /* PSRAM_NBL0, PSRAM_NBL1, LCD_PSRAM_D4, LCD_PSRAM_D5, LCD_PSRAM_D6, LCD_PSRAM_D7,
      LCD_PSRAM_D8, LCD_PSRAM_D9, LCD_PSRAM_D10, LCD_PSRAM_D11, LCD_PSRAM_D12 */
   gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 |GPIO_PIN_10 |\
                              GPIO_PIN_11 | GPIO_PIN_12 |GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
   HAL_GPIO_Init(GPIOE, &gpio_init_structure);
-  
+
   /* GPIOF configuration */
-  /* PSRAM_A0, PSRAM_A1, PSRAM_A2, PSRAM_A3, PSRAM_A4, PSRAM_A5, 
+  /* PSRAM_A0, PSRAM_A1, PSRAM_A2, PSRAM_A3, PSRAM_A4, PSRAM_A5,
      PSRAM_A6, PSRAM_A7, PSRAM_A8, PSRAM_A9 */
   gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 |\
                              GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
@@ -720,7 +721,7 @@ static void FMC_BANK2_MspInit(void)
   /* GPIOG configuration */
   /* PSRAM_A10, PSRAM_A11, PSRAM_A12, PSRAM_A13, PSRAM_A14, PSRAM_A15, LCD_NE */
   gpio_init_structure.Pin  = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 |\
-                             GPIO_PIN_9 ;  
+                             GPIO_PIN_9 ;
   HAL_GPIO_Init(GPIOG, &gpio_init_structure);
 }
 
@@ -728,9 +729,9 @@ static void FMC_BANK2_MspInit(void)
 /**
   * @brief  Initializes LCD IO.
   * @retval None
-  */ 
-static void FMC_BANK2_Init(void) 
-{  
+  */
+static void FMC_BANK2_Init(void)
+{
   SRAM_HandleTypeDef         hsram;
   FMC_NORSRAM_TimingTypeDef  sram_timing;
 
@@ -775,10 +776,10 @@ static void FMC_BANK2_Init(void)
 
 /**
   * @brief  Writes register value.
-  * @param  Data: Data to be written 
+  * @param  Data: Data to be written
   * @retval None
   */
-static void FMC_BANK2_WriteData(uint16_t Data) 
+static void FMC_BANK2_WriteData(uint16_t Data)
 {
   /* Write 16-bit Reg */
   FMC_BANK2->RAM = Data;
@@ -790,7 +791,7 @@ static void FMC_BANK2_WriteData(uint16_t Data)
   * @param  Reg: Register to be written
   * @retval None
   */
-static void FMC_BANK2_WriteReg(uint8_t Reg) 
+static void FMC_BANK2_WriteReg(uint8_t Reg)
 {
   /* Write 16-bit Index, then write register */
   FMC_BANK2->REG = Reg;
@@ -801,7 +802,7 @@ static void FMC_BANK2_WriteReg(uint8_t Reg)
   * @brief  Reads register value.
   * @retval Read value
   */
-static uint16_t FMC_BANK2_ReadData(void) 
+static uint16_t FMC_BANK2_ReadData(void)
 {
   return FMC_BANK2->RAM;
 }
@@ -816,7 +817,7 @@ static uint16_t FMC_BANK2_ReadData(void)
   * @brief  Initializes LCD low level.
   * @retval None
   */
-void LCD_IO_Init(void) 
+void LCD_IO_Init(void)
 {
   FMC_BANK2_Init();
 }
@@ -826,7 +827,7 @@ void LCD_IO_Init(void)
   * @param  RegValue: Register value to be written
   * @retval None
   */
-void LCD_IO_WriteData(uint16_t RegValue) 
+void LCD_IO_WriteData(uint16_t RegValue)
 {
   /* Write 16-bit Reg */
   FMC_BANK2_WriteData(RegValue);
@@ -855,7 +856,7 @@ void LCD_IO_WriteMultipleData(uint16_t *pData, uint32_t Size)
   * @param  Reg: Register to be written
   * @retval None
   */
-void LCD_IO_WriteReg(uint8_t Reg) 
+void LCD_IO_WriteReg(uint8_t Reg)
 {
   /* Write 16-bit Index, then Write Reg */
   FMC_BANK2_WriteReg(Reg);
@@ -866,7 +867,7 @@ void LCD_IO_WriteReg(uint8_t Reg)
   * @brief  Reads data from LCD data register.
   * @retval Read data.
   */
-uint16_t LCD_IO_ReadData(void) 
+uint16_t LCD_IO_ReadData(void)
 {
   return FMC_BANK2_ReadData();
 }
@@ -902,39 +903,39 @@ void AUDIO_IO_DeInit(void)
 /**
   * @brief  Writes a single data.
   * @param  Addr: I2C address
-  * @param  Reg: Reg address 
+  * @param  Reg: Reg address
   * @param  Value: Data to be written
   * @retval None
   */
 void AUDIO_IO_Write(uint8_t Addr, uint16_t Reg, uint16_t Value)
 {
   uint16_t tmp = Value;
-  
+
   Value = ((uint16_t)(tmp >> 8) & 0x00FF);
-  
+
   Value |= ((uint16_t)(tmp << 8)& 0xFF00);
-  
+
   I2Cx_WriteMultiple(&hI2cAudioHandler, Addr, Reg, I2C_MEMADD_SIZE_16BIT,(uint8_t*)&Value, 2);
 }
 
 /**
   * @brief  Reads a single data.
   * @param  Addr: I2C address
-  * @param  Reg: Reg address 
+  * @param  Reg: Reg address
   * @retval Data to be read
   */
 uint16_t AUDIO_IO_Read(uint8_t Addr, uint16_t Reg)
 {
   uint16_t read_value = 0, tmp = 0;
-  
+
   I2Cx_ReadMultiple(&hI2cAudioHandler, Addr, Reg, I2C_MEMADD_SIZE_16BIT, (uint8_t*)&read_value, 2);
-  
+
   tmp = ((uint16_t)(read_value >> 8) & 0x00FF);
-  
+
   tmp |= ((uint16_t)(read_value << 8)& 0xFF00);
-  
+
   read_value = tmp;
-  
+
   return read_value;
 }
 

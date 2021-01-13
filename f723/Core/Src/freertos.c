@@ -26,17 +26,19 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stm32f723e_discovery.h"
 #include <stddef.h>
-#include "MLX90640_API.h"
+#include <stdbool.h>
+#include "stm32f723e_discovery.h"
 #include "MLX90640_I2C_Driver.h"
-#include "lwprintf.h"
+#include "MLX90640_API.h"
+#include "usart.h"
 #include "cpu_utils.h"
+#include "spi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+static void spi_process(void);
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -47,21 +49,24 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 #define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
+#define size (sizeof(float) / sizeof(uint8_t) * 768)
+#define spi_evt_id 0x00000001
+#define i2c_evt_id 0x00000002
+#define qqq_evt_id 0x00000004
+float vdd, Ta, tr;
+int subPage;
+osStatus_t spi_state;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-static uint16_t eeMLX90640[832];
-static float mlx90640To[768];
-uint16_t frame[834];
-float emissivity = 0.95;
-int status;
-
 uint16_t CPUUsage;
+uint8_t *test_ptr = (uint8_t *) &mlx90640To[0];
+extern struct mlx_event mlx_event;
+extern volatile uint8_t time4_seconds_elapsed;
 
-paramsMLX90640 mlx90640;
-
-static int b = 0;
+uint8_t aRxBuffer[DMA_U8_OUTPUT_SIZE]__attribute__((aligned (4))) = {0};
+uint8_t aTxBuffer[DMA_U8_OUTPUT_SIZE]__attribute__((aligned (4))) = {0};
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -87,6 +92,26 @@ osTimerId_t myTimer02Handle;
 const osTimerAttr_t myTimer02_attributes = {
   .name = "myTimer02"
 };
+/* Definitions for empty_id */
+osSemaphoreId_t empty_idHandle;
+const osSemaphoreAttr_t empty_id_attributes = {
+  .name = "empty_id"
+};
+/* Definitions for filled_id */
+osSemaphoreId_t filled_idHandle;
+const osSemaphoreAttr_t filled_id_attributes = {
+  .name = "filled_id"
+};
+/* Definitions for ThermalEvent */
+osEventFlagsId_t ThermalEventHandle;
+const osEventFlagsAttr_t ThermalEvent_attributes = {
+  .name = "ThermalEvent"
+};
+/* Definitions for Thermal1sEvent */
+osEventFlagsId_t Thermal1sEventHandle;
+const osEventFlagsAttr_t Thermal1sEvent_attributes = {
+  .name = "Thermal1sEvent"
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -102,37 +127,8 @@ extern void MX_USB_HOST_Init(void);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* Hook prototypes */
-void vApplicationIdleHook(void);
-void vApplicationTickHook(void);
 void vApplicationMallocFailedHook(void);
 void vApplicationDaemonTaskStartupHook(void);
-
-/* USER CODE BEGIN 2 */
-__weak void vApplicationIdleHook( void )
-{
-  /* vApplicationIdleHook() will only be called if configUSE_IDLE_HOOK is set
-  to 1 in FreeRTOSConfig.h. It will be called on each iteration of the idle
-  task. It is essential that code added to this hook function never attempts
-  to block in any way (for example, call xQueueReceive() with a block time
-  specified, or call vTaskDelay()). If the application makes use of the
-  vTaskDelete() API function (as this demo application does) then it is also
-  important that vApplicationIdleHook() is permitted to return to its calling
-  function, because it is the responsibility of the idle task to clean up
-  memory allocated by the kernel to any task that has since been deleted. */
-  __NOP();
-}
-/* USER CODE END 2 */
-
-/* USER CODE BEGIN 3 */
-__weak void vApplicationTickHook( void )
-{
-  /* This function will be called by each tick interrupt if
-  configUSE_TICK_HOOK is set to 1 in FreeRTOSConfig.h. User code can be
-  added here, but the tick hook is called from an interrupt context, so
-  code must not attempt to block, and only the interrupt safe FreeRTOS API
-  functions can be used (those that end in FromISR()). */
-}
-/* USER CODE END 3 */
 
 /* USER CODE BEGIN 5 */
 __weak void vApplicationMallocFailedHook(void)
@@ -166,37 +162,19 @@ void vApplicationDaemonTaskStartupHook(void)
   */
 void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN Init */
-  status = MLX90640_SetRefreshRate(MLX_ADDR, MLX_RATE);
-  if (status != 0)
-  {
-    printf("\r\nSetRefreshRate error with code:%d\r\n", status);
-    while (1);
-  }
-  status = MLX90640_SetChessMode(MLX_ADDR);
-  if (status != 0)
-  {
-    printf("\r\nSetChessMode error with code:%d\r\n", status);
-    while (1);
-  }
-  status = MLX90640_DumpEE(MLX_ADDR, eeMLX90640);
-  if (status != 0)
-  {
-    printf("\r\nload system parameters error with code:%d\r\n", status);
-    while (1);
-  }
-  status = MLX90640_ExtractParameters(eeMLX90640, &mlx90640);
-  if (status != 0)
-  {
-    printf("\r\nParameter extraction failed with error code:%d\r\n", status);
-    while (1);
-  }
-  printf("===%d,%d===\r\n", MLX90640_GetRefreshRate(MLX_ADDR), MLX90640_GetCurMode(MLX_ADDR));
-  printf("initialed\r\n");
+  HAL_SPIEx_FlushRxFifo(TEST_SPI_ADDRESS);
   /* USER CODE END Init */
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* creation of empty_id */
+  empty_idHandle = osSemaphoreNew(10, 10, &empty_id_attributes);
+
+  /* creation of filled_id */
+  filled_idHandle = osSemaphoreNew(10, 10, &filled_id_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -211,7 +189,7 @@ void MX_FREERTOS_Init(void) {
 
   /* USER CODE BEGIN RTOS_TIMERS */
   /* start timers, add new ones, ... */
-  osTimerStart(myTimer01Handle, 40);
+  osTimerStart(myTimer01Handle, MLX_FPS_CAL(MLX_RATE));
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -229,6 +207,17 @@ void MX_FREERTOS_Init(void) {
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
+  /* Create the event(s) */
+  /* creation of ThermalEvent */
+  ThermalEventHandle = osEventFlagsNew(&ThermalEvent_attributes);
+
+  /* creation of Thermal1sEvent */
+  Thermal1sEventHandle = osEventFlagsNew(&Thermal1sEvent_attributes);
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -243,10 +232,37 @@ void StartDefaultTask(void *argument)
   /* init code for USB_HOST */
   MX_USB_HOST_Init();
   /* USER CODE BEGIN StartDefaultTask */
+  int status = MLX90640_SynchFrame(MLX_ADDR);
+  if (status != 0)
+  {
+    printf("\r\nMLX90640_SynchFrame failed with error code:%d\r\n", status);
+    Error_Handler();
+  }
+  while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
+  {
+    osDelay(1);
+    printf("Init, NSS fail\r\n");
+  }
+  if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, test_ptr, (uint8_t *)aRxBuffer, DMA_U8_OUTPUT_SIZE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  else
+  {
+    printf("\r\nHAL_SPI_TransmitReceive_DMA DMA_U8_OUTPUT_SIZE=%d\r\n", DMA_U8_OUTPUT_SIZE);
+  }
   /* Infinite loop */
   for (;;)
   {
-    osDelay(1000);
+    osEventFlagsWait(ThermalEventHandle, spi_evt_id | i2c_evt_id, osFlagsWaitAll, osWaitForever);
+    printf("------------\r\n");
+    // printf("subPage:%d,vdd:%2.3f,tr:%2.3f\r\n", subPage, vdd, tr);
+    // printf("slot:spi[%02d],i2c[%02d],err[%d]\r\n", mlx_event.spi, mlx_event.i2c, mlx_event.err);
+    if (buffer_tag == BUFFER_A)
+    {
+      printf("sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+             subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
+    }
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -265,13 +281,13 @@ void StartTask02(void *argument)
   for (;;)
   {
     osDelay(1000);
-#if 1
-    printf("[%d]\r\n",b);
-    BSP_LED_Toggle(LED5);
-    b = 0;
-    printf("IdleCount: %u\r\n", ulIdleCycleCount);
-    printf("CPUUsage: %d\r\n", CPUUsage);
-#endif
+    // osEventFlagsWait(Thermal1sEventHandle, spi_evt_id | i2c_evt_id, osFlagsWaitAll, osWaitForever);
+    printf("1s:spi[%02d],i2c[%02d]\r\n", mlx_event.spi, mlx_event.i2c);
+    printf("err:fc[%d],fd[%d],init[%d],vd[%d],tr[%d]\r\n",
+           mlx_event.frame_check_err, mlx_event.frame_data_err, mlx_event.init_err,
+           mlx_event.vdd_err, mlx_event.tr_err);
+    mlx_event.spi = 0;
+    mlx_event.i2c = 0;
   }
   /* USER CODE END StartTask02 */
 }
@@ -280,41 +296,54 @@ void StartTask02(void *argument)
 void Callback01(void *argument)
 {
   /* USER CODE BEGIN Callback01 */
-  int status = MLX90640_GetFrameData(MLX_ADDR, frame);
-  if (status < 0)
+  int frame_ready_status;
+cb_01_error:
+  frame_ready_status = MLX90640_GetFrameData(MLX_ADDR, frame);
+  if (frame_ready_status < 0)
   {
-    printf("GetFrame Error: %d\r\n", status);
+    printf("GetFrame Error: [%d]\r\n", frame_ready_status);
+    mlx_event.init_err++;
+    goto cb_01_error;
   }
   else
   {
-    paramsMLX90640 *params = &mlx90640;
-    MLX90640_CalculateTo(frame, params, emissivity, mlx90640To);
-    MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
-    MLX90640_BadPixelsCorrection(params->brokenPixels, mlx90640To, MLX90640_GetCurMode(MLX_ADDR),&mlx90640);
-    b++;
-  }
-  CPUUsage = osGetCPUUsage();
-// #if 0
-//   float tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
-//   float vdd = MLX90640_GetVdd(frame, &mlx90640);
-//   printf("v:%ft:%f\r\n", vdd, tr);
-// #else
-//   if(b%64==0)
-//     printf("b=%d\r\n", b);
-// #endif
-#if 0
-  for (int i = 0; i < NELEMS(mlx90640To); i++)
-  {
-    if (i % 32 == 0 && i != 0)
+    subPage = MLX90640_GetSubPageNumber(frame);
+    if (subPage >= 2 || subPage < 0)
     {
-      printf("\r\n");
+      printf("subPage Error: [%d]\r\n", subPage);
+      goto cb_01_error;
     }
-    printf("%2.2f ", mlx90640To[i]);
+    // spi_state = osSemaphoreAcquire(empty_idHandle, osWaitForever);
+    // if (spi_state != osOK)
+    // {
+    //   printf("osSemaphoreAcquire empty_idHandle 0:%d\r\n", spi_state);
+    // }
+    vdd = MLX90640_GetVdd(frame, &mlx90640);
+    if (vdd <= 0)
+    {
+      mlx_event.vdd_err++;
+      goto cb_01_error;
+    }
+    tr = MLX90640_GetTa(frame, &mlx90640) - TA_SHIFT; //Reflected temperature based on the sensor ambient temperature
+    if (tr > TEMPERATURE_MAXIMUM || tr <= TEMPERATURE_MINIMUM)
+    {
+      mlx_event.tr_err++;
+      goto cb_01_error;
+    }
+    if (buffer_tag == BUFFER_A)
+    {
+      MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To, buffer_tag);
+      printf("cb_sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+             subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
+    }
+    // spi_state = osSemaphoreRelease(filled_idHandle);
+    // if (spi_state != osOK)
+    // {
+    //   printf("osSemaphoreRelease filled_idHandle 0:%d\r\n", spi_state);
+    // }
+    mlx_event.i2c++;
+    osEventFlagsSet(ThermalEventHandle, i2c_evt_id);
   }
-#endif
-#if 0
-  printf("sub:%d\r\n", MLX90640_GetSubPageNumber(frame));
-#endif
   /* USER CODE END Callback01 */
 }
 
@@ -322,13 +351,103 @@ void Callback01(void *argument)
 void Callback02(void *argument)
 {
   /* USER CODE BEGIN Callback02 */
-
+  osThreadExit();
   /* USER CODE END Callback02 */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-
+static void spi_process(void)
+{
+  uint8_t check = aRxBuffer[DMA_U8_OUTPUT_SIZE - 1];
+  uint8_t type = aRxBuffer[0];
+  printf("type=0x%X,end=%X\r\n", type, check);
+  // spi_state = osSemaphoreAcquire(filled_idHandle, 0);
+  // if (spi_state != osOK)
+  // {
+  //   printf("osSemaphoreAcquire filled_idHandle 1:%d\r\n", spi_state);
+  // }
+  if (check == 0xFF)
+  {
+    mlx_event.spi++;
+#if 0
+    // while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
+    // {
+    // }
+    // if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, (uint8_t *)mlx90640To, (uint8_t *)aRxBuffer, DMA_U8_OUTPUT_SIZE) != HAL_OK)
+    // {
+    //   Error_Handler();
+    // }
+#endif
+//     if (buffer_tag == BUFFER_A)
+//     {
+//       // printf("cb_sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+//       //        subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
+//       // __NOP();
+//     }
+  }
+  else
+  {
+    mlx_event.frame_check_err++;
+#if DEBUG == 1
+    printf("reserved\r\n");
+#else
+    Error_Handler();
+#endif
+  }
+  // spi_state = osSemaphoreRelease(empty_idHandle);
+  // if (spi_state != osOK)
+  // {
+  //   printf("osSemaphoreRelease empty_idHandle 1:%d\r\n", spi_state);
+  // }
+}
+void HAL_SPI_AbortCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  HAL_SPI_DMAStop(TEST_SPI_ADDRESS);
+  HAL_SPIEx_FlushRxFifo(TEST_SPI_ADDRESS);
+  __HAL_RCC_DMA2_CLK_DISABLE();
+  HAL_SPI_DeInit(TEST_SPI_ADDRESS);
+  __HAL_RCC_DMA2_CLK_ENABLE();
+  HAL_SPI_Init(TEST_SPI_ADDRESS);
+  while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
+  {
+  }
+  if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, test_ptr, (uint8_t *)aRxBuffer, DMA_U8_OUTPUT_SIZE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == TEST_SPI_ADDRESS)
+  {
+    printf("HAL_SPI_ErrorCallback");
+    spi_process();
+    BSP_LED_Toggle(LED_GREEN);
+    osEventFlagsSet(ThermalEventHandle, spi_evt_id);
+  }
+}
+void HAL_SPI_ErrorCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == TEST_SPI_ADDRESS)
+  {
+    printf("HAL_SPI_ErrorCallback");
+    Error_Handler();
+  }
+}
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  if (hspi == TEST_SPI_ADDRESS)
+  {
+    spi_process();
+    BSP_LED_Toggle(LED_GREEN);
+    osEventFlagsSet(ThermalEventHandle, spi_evt_id);
+  }
+}
+void HAL_SPI_TxRxHalfCpltCallback(SPI_HandleTypeDef *hspi)
+{
+  // printf("rx:%d,tx:%d\r\n", __HAL_DMA_GET_COUNTER(&hdma_spi1_rx), __HAL_DMA_GET_COUNTER(&hdma_spi1_tx));
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

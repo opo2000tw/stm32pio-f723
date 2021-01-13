@@ -1,0 +1,11 @@
+{
+    "name": "BSP",
+    "version": "1.16.0",
+    "build": {
+        "flags": [
+            "-I $PROJECT_DIR/Core/Inc",
+            "-I $PROJECT_DIR/lib/source/inc",
+            "-I inc"
+        ]
+    }
+}

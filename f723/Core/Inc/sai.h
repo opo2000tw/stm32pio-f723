@@ -1,12 +1,12 @@
 /**
   ******************************************************************************
-  * File Name          : SAI.h
-  * Description        : This file provides code for the configuration
-  *                      of the SAI instances.
+  * @file    sai.h
+  * @brief   This file contains all the function prototypes for
+  *          the sai.c file
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -17,10 +17,11 @@
   ******************************************************************************
   */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __sai_H
-#define __sai_H
+#ifndef __SAI_H__
+#define __SAI_H__
+
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -46,14 +47,7 @@ void MX_SAI2_Init(void);
 #ifdef __cplusplus
 }
 #endif
-#endif /*__ sai_H */
 
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
+#endif /* __SAI_H__ */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

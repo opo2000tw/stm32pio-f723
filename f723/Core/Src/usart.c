@@ -1,12 +1,12 @@
 /**
   ******************************************************************************
-  * File Name          : USART.c
-  * Description        : This file provides code for the configuration
-  *                      of the USART instances.
+  * @file    usart.c
+  * @brief   This file provides code for the configuration
+  *          of the USART instances.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under Ultimate Liberty license
@@ -21,6 +21,7 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+/* Define application custom instance */
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart4;
@@ -32,7 +33,6 @@ UART_HandleTypeDef huart6;
 /* UART4 init function */
 void MX_UART4_Init(void)
 {
-
   huart4.Instance = UART4;
   huart4.Init.BaudRate = 115200;
   huart4.Init.WordLength = UART_WORDLENGTH_8B;
@@ -116,7 +116,7 @@ void MX_USART6_UART_Init(void)
 {
 
   huart6.Instance = USART6;
-  huart6.Init.BaudRate = 921600;
+  huart6.Init.BaudRate = 1843200;
   huart6.Init.WordLength = UART_WORDLENGTH_8B;
   huart6.Init.StopBits = UART_STOPBITS_1;
   huart6.Init.Parity = UART_PARITY_NONE;
@@ -389,48 +389,73 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 //   return ch;
 // }
 
-#if 0
+#if 1
 int _write(int fd, char *ptr, int len)
 {
-    int i = 0;
-    /*
-     * write "len" of char from "ptr" to file id "fd"
-     * Return number of char written.
-     *
-    * Only work for STDOUT, STDIN, and STDERR
-     */
-    if (fd > 2) { return -1; }
-    while (*ptr && (i < len))
-    {
-    HAL_UART_Transmit(&USARTx,(uint8_t*)ptr,sizeof(*ptr),10);
+  int i = 0;
+  /*
+   * write "len" of char from "ptr" to file id "fd"
+   * Return number of char written.
+   *
+  * Only work for STDOUT, STDIN, and STDERR
+   */
+  if (fd > 2)
+  {
+    return -1;
+  }
+  while (*ptr && (i < len))
+  {
+    HAL_UART_Transmit(USARTx, (uint8_t *)ptr, sizeof(*ptr), 100);
     if (*ptr == '\n')
     {
-        HAL_UART_Transmit(&USARTx,(uint8_t*)"\r",2,10);
+      HAL_UART_Transmit(USARTx, (uint8_t *)"\r", 2, 100);
     }
     i++;
     ptr++;
-    }
-    return i;
+  }
+  return i;
 }
 #endif
 
+#if 0
 /**
  * \brief           Output function to handle all characters for print operation
  * \param[in]       ch: Character to output
  * \param[in]       p: \ref lwprintf_t handle
  * \return          ch on success, 0 on failure
  */
-int lwprintf_my_out_func(int ch, lwprintf_t* p)
-{
-    uint8_t c = (uint8_t)ch;
 
+int lwprintf_my_out_func(int ch, lwprintf_t *p)
+{
+  if (p == &dbg_instance)
+  {
+    uint8_t c = (uint8_t)ch;
     /* Don't print zero */
-    if (c == '\0') {
-        return ch;
+    if (c == '\0')
+    {
+      return ch;
     }
-    HAL_UART_Transmit(&USARTx, &c, 1, 10);
-    return ch;
+    HAL_UART_Transmit(USARTx, &c, 1, 100);
+    /* This is custom instance 1 */
+  }
+  else if (p == &common_instance)
+  {
+    /* This is custom instance 2 */
+  }
+  else
+  {
+    uint8_t c = (uint8_t)ch;
+    /* Don't print zero */
+    if (c == '\0')
+    {
+      return ch;
+    }
+    HAL_UART_Transmit(USARTx, &c, 1, 100);
+    /* This is default instance */
+  }
+  return ch;
 }
+#endif
 /* USER CODE END 1 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
