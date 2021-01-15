@@ -111,6 +111,7 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+#if 0
   MPU_ConfigPSRAM();
   if (BSP_LCD_Init() != LCD_OK)
   {
@@ -129,6 +130,8 @@ int main(void)
   testQQ();
 #endif
   }
+#endif
+  HAL_Delay(200);
   if (MLX90640_I2CCheck() != true)
   {
     Error_Handler();
