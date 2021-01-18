@@ -53,8 +53,6 @@ static void spi_process(void);
 #define spi_evt_id 0x00000001
 #define i2c_evt_id 0x00000002
 #define qqq_evt_id 0x00000004
-float vdd, Ta, tr;
-int subPage;
 osStatus_t spi_state;
 /* USER CODE END PM */
 
@@ -238,11 +236,11 @@ void StartDefaultTask(void *argument)
     printf("\r\nMLX90640_SynchFrame failed with error code:%d\r\n", status);
     Error_Handler();
   }
-  while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
-  {
-    osDelay(1);
-    printf("Init, NSS fail\r\n");
-  }
+  // while (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_15) != GPIO_PIN_SET) // NSS signal
+  // {
+  //   osDelay(1);
+  //   printf("Init, NSS fail\r\n");
+  // }
   if (HAL_SPI_TransmitReceive_DMA(TEST_SPI_ADDRESS, test_ptr, (uint8_t *)aRxBuffer, DMA_U8_OUTPUT_SIZE) != HAL_OK)
   {
     Error_Handler();
@@ -255,13 +253,13 @@ void StartDefaultTask(void *argument)
   for (;;)
   {
     osEventFlagsWait(ThermalEventHandle, spi_evt_id | i2c_evt_id, osFlagsWaitAll, osWaitForever);
-    printf("------------\r\n");
+    printf("-\r\n");
     // printf("subPage:%d,vdd:%2.3f,tr:%2.3f\r\n", subPage, vdd, tr);
     // printf("slot:spi[%02d],i2c[%02d],err[%d]\r\n", mlx_event.spi, mlx_event.i2c, mlx_event.err);
     if (buffer_tag == BUFFER_A)
     {
-      printf("sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-             subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
+      // printf("BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
+            //  mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
     }
   }
   /* USER CODE END StartDefaultTask */
@@ -297,6 +295,8 @@ void Callback01(void *argument)
 {
   /* USER CODE BEGIN Callback01 */
   int frame_ready_status;
+  float vdd, Ta, tr;
+  int subPage;
 cb_01_error:
   frame_ready_status = MLX90640_GetFrameData(MLX_ADDR, frame);
   if (frame_ready_status < 0)
@@ -333,8 +333,6 @@ cb_01_error:
     if (buffer_tag == BUFFER_A)
     {
       MLX90640_CalculateTo(frame, &mlx90640, emissivity, tr, mlx90640To, buffer_tag);
-      printf("cb_sub=[%d],BUFF_A=[%2.3f],[%2.3f],[%2.3f],[%2.3f],[%2.3f]\r\n",
-             subPage, mlx90640To[0], mlx90640To[127], mlx90640To[128], mlx90640To[256], mlx90640To[768 - 1]);
     }
     // spi_state = osSemaphoreRelease(filled_idHandle);
     // if (spi_state != osOK)
@@ -361,7 +359,7 @@ static void spi_process(void)
 {
   uint8_t check = aRxBuffer[DMA_U8_OUTPUT_SIZE - 1];
   uint8_t type = aRxBuffer[0];
-  printf("type=0x%X,end=%X\r\n", type, check);
+  // printf("type=0x%X,end=%X\r\n", type, check);
   // spi_state = osSemaphoreAcquire(filled_idHandle, 0);
   // if (spi_state != osOK)
   // {
@@ -390,7 +388,8 @@ static void spi_process(void)
   {
     mlx_event.frame_check_err++;
 #if DEBUG == 1
-    printf("reserved\r\n");
+    printf("r\r\n");
+    HAL_SPI_Abort_IT(TEST_SPI_ADDRESS);
 #else
     Error_Handler();
 #endif
